@@ -98,7 +98,7 @@ export default function Upload() {
       navigate(`/project/${savedProject.id}`);
     } catch (e) {
       console.error("Error creating project", e);
-      alert("Failed to save project. Ensure Database Seed has been setup or Firestore rules allow writing.");
+      alert(`Failed to save project to cloud. ERROR: ${e.message}`);
       setIsSubmitting(false);
     }
   };

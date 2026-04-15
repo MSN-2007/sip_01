@@ -45,6 +45,31 @@ export async function getUsers() {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
+// --- Connections (Social Graph) ---
+export async function sendConnectionRequest(fromUserId, toUserId) {
+  const connectionId = `${fromUserId}_${toUserId}`;
+  await setDoc(doc(db, 'connections', connectionId), {
+    id: connectionId,
+    from: fromUserId,
+    to: toUserId,
+    status: 'pending',
+    createdAt: new Date().toISOString()
+  });
+  return true;
+}
+
+export async function acceptConnectionRequest(connectionId) {
+  const docRef = doc(db, 'connections', connectionId);
+  await updateDoc(docRef, { status: 'accepted', updatedAt: new Date().toISOString() });
+  return true;
+}
+
+export async function getPendingRequests(userId) {
+  const q = query(collection(db, 'connections'), where('to', '==', userId), where('status', '==', 'pending'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
 // --- Seeding Data (Temporary Admin tool) ---
 import { mockProjects, mockCommunities, mockUsers } from '../data/mockData';
 

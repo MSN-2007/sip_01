@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Users, UserPlus, MessageSquare, Briefcase, Star, Search, ArrowRight, Check } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './Profile.css';
@@ -7,6 +7,16 @@ export default function Connects() {
   const { users, user: currentUser } = useApp();
   const [search, setSearch] = useState('');
   const [requested, setRequested] = useState([]);
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [loadingAction, setLoadingAction] = useState(null);
+
+  useEffect(() => {
+    if (currentUser) {
+      import('../services/db').then(({ getPendingRequests }) => {
+        getPendingRequests(currentUser.id).then(reqs => setPendingRequests(reqs));
+      });
+    }
+  }, [currentUser]);
 
   if (!currentUser) {
     return (
@@ -19,34 +29,42 @@ export default function Connects() {
     );
   }
 
-  const toggleRequest = (id) => {
-    if (requested.includes(id)) {
-      setRequested(requested.filter(rid => rid !== id));
-    } else {
-      setRequested([...requested, id]);
+  const handleRequest = async (id) => {
+    setLoadingAction(id);
+    try {
+      const { sendConnectionRequest } = await import('../services/db');
+      await sendConnectionRequest(currentUser.id, id);
+      setRequested(prev => [...prev, id]);
+    } catch(e) {
+      alert("Failed to send request: " + e.message);
     }
+    setLoadingAction(null);
   };
 
-  const mockConnects = useMemo(() => {
-    return users
-      .filter(u => u.id !== currentUser.id && (u.name.toLowerCase().includes(search.toLowerCase()) || u.tagline.toLowerCase().includes(search.toLowerCase())))
-      .slice(0, 4);
-  }, [users, currentUser.id, search]);
+  const handleAccept = async (connectionId, fromId) => {
+    setLoadingAction(connectionId);
+    try {
+      const { acceptConnectionRequest } = await import('../services/db');
+      await acceptConnectionRequest(connectionId);
+      setPendingRequests(prev => prev.filter(r => r.id !== connectionId));
+      alert("Connection Accepted! You can now message them.");
+    } catch(e) {
+      alert("Failed to accept: " + e.message);
+    }
+    setLoadingAction(null);
+  };
 
   const recommended = useMemo(() => {
     return users
       .filter(u => u.id !== currentUser.id)
-      .slice(4, 8)
-      .map(u => ({
-        ...u,
-        reason: 'Shared domain: Agriculture'
-      }));
-  }, [users, currentUser.id]);
+      .slice(0, 8)
+      .map(u => ({ ...u, reason: 'Similar tech stack' }));
+  }, [users, currentUser]);
 
   return (
     <div className="home-page-new">
        <header className="home-top-bar" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 16 }}>
-          <h1 className="section-title-new" style={{ fontSize: '2.5rem' }}>Connects</h1>
+          <h1 className="section-title-new" style={{ fontSize: '2.5rem' }}>Network</h1>
           <div className="search-container-new" style={{ maxWidth: '100%' }}>
              <Search className="search-icon-new" size={20} />
              <input 
@@ -60,34 +78,43 @@ export default function Connects() {
 
        <div className="connects-layout-grid">
           
-          {/* Main List: My Connections */}
+          {/* Main List: Pending Requests */}
           <div className="connects-main">
              <div className="section-header-new">
-                <h2 className="section-title-new" style={{ fontSize: '1.5rem', fontWeight: 800 }}><Users size={24} style={{ color: 'var(--accent-primary)', marginRight: 12 }} /> Collaborators</h2>
+                <h2 className="section-title-new" style={{ fontSize: '1.5rem', fontWeight: 800 }}><Users size={24} style={{ color: 'var(--accent-primary)', marginRight: 12 }} /> Pending Requests</h2>
              </div>
              
              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {mockConnects.length > 0 ? mockConnects.map(user => (
-                   <div key={user.id} className="kanban-card glass-card connects-user-card" style={{ padding: 24, display: 'flex', gap: 20, alignItems: 'center' }}>
-                      <img src={user.avatar} alt={user.name} className="profile-avatar-large" style={{ width: 80, height: 80, borderRadius: 16 }} />
-                      <div style={{ flex: 1 }}>
-                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                            <div style={{ minWidth: 0 }}>
-                               <h4 style={{ fontSize: '1.2rem', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user.name}</h4>
-                               <p className="text-muted" style={{ fontSize: '0.85rem' }}>{user.tagline}</p>
-                            </div>
-                            <div className="badge-item" style={{ fontSize: '0.65rem', whiteSpace: 'nowrap' }}>Active Now</div>
-                         </div>
-                         <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-                            <button className="btn btn-primary btn-sm"><MessageSquare size={16} /> Message</button>
-                            <button className="btn btn-ghost btn-sm">View Projects</button>
-                         </div>
-                      </div>
-                   </div>
-                )) : (
+                {pendingRequests.length > 0 ? pendingRequests.map(req => {
+                   const u = users.find(x => x.id === req.from);
+                   if (!u) return null;
+                   return (
+                     <div key={req.id} className="kanban-card glass-card connects-user-card" style={{ padding: 24, display: 'flex', gap: 20, alignItems: 'center' }}>
+                        <img src={u.avatar} alt={u.name} className="profile-avatar-large" style={{ width: 80, height: 80, borderRadius: 16 }} />
+                        <div style={{ flex: 1 }}>
+                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                              <div style={{ minWidth: 0 }}>
+                                 <h4 style={{ fontSize: '1.2rem', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.name}</h4>
+                                 <p className="text-muted" style={{ fontSize: '0.85rem' }}>{u.tagline}</p>
+                              </div>
+                              <div className="badge-item" style={{ fontSize: '0.65rem', whiteSpace: 'nowrap' }}>New Request</div>
+                           </div>
+                           <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+                              <button 
+                                className="btn btn-primary btn-sm" 
+                                onClick={() => handleAccept(req.id, req.from)}
+                                disabled={loadingAction === req.id}
+                              >
+                                {loadingAction === req.id ? 'Accepting...' : 'Accept Request'}
+                              </button>
+                           </div>
+                        </div>
+                     </div>
+                   );
+                }) : (
                    <div className="empty-state-new" style={{ padding: 48, textAlign: 'center', background: 'var(--bg-elevated)', borderRadius: 24, border: '1px dashed var(--border-subtle)' }}>
                       <Users size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-                      <p className="text-muted">No collaborators found matching "{search}"</p>
+                      <p className="text-muted">You have no pending requests.</p>
                    </div>
                 )}
              </div>
@@ -112,9 +139,14 @@ export default function Connects() {
                       <button 
                         className={`btn btn-sm ${requested.includes(u.id) ? 'btn-ghost' : 'btn-secondary'}`} 
                         style={{ width: '100%', fontSize: '0.8rem' }}
-                        onClick={() => toggleRequest(u.id)}
+                        onClick={() => handleRequest(u.id)}
+                        disabled={requested.includes(u.id) || loadingAction === u.id}
                       >
-                         {requested.includes(u.id) ? <><Check size={14} /> Requested</> : <><UserPlus size={14} /> Connect</>}
+                         {requested.includes(u.id) 
+                           ? <><Check size={14} /> Requested</> 
+                           : loadingAction === u.id 
+                             ? 'Sending...'
+                             : <><UserPlus size={14} /> Connect</>}
                       </button>
                    </div>
                 ))}

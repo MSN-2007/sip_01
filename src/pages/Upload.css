@@ -1,0 +1,237 @@
+/* Multi-step Project Wizard - Upload.css */
+
+.upload-page-new {
+  padding: 60px 40px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.upload-header-new {
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.upload-title-new {
+  font-size: 2.5rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+  letter-spacing: -0.04em;
+  margin-bottom: 12px;
+}
+
+.upload-subtitle-new {
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+/* Progress Indicator */
+.wizard-progress {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 60px;
+  position: relative;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.wizard-progress::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border-subtle);
+  z-index: 1;
+}
+
+.progress-step {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-elevated);
+  border: 2px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  position: relative;
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.progress-step.active {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: white;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+.progress-step.completed {
+  background: var(--accent-secondary);
+  border-color: var(--accent-secondary);
+  color: white;
+}
+
+.progress-label {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.progress-step.active .progress-label {
+  color: var(--text-primary);
+}
+
+/* Form Container */
+.wizard-form-card {
+  background: rgba(17, 24, 39, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-2xl);
+  padding: 48px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-content {
+  flex: 1;
+}
+
+.step-title-new {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 32px;
+  color: var(--text-primary);
+}
+
+.form-field-group {
+  margin-bottom: 32px;
+}
+
+.field-label-new {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.field-input-new {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.field-input-new:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+}
+
+/* Step-specific UI */
+.domain-grid-new {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.domain-option-card {
+  padding: 24px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.domain-option-card:hover {
+  border-color: var(--accent-primary);
+  transform: translateY(-4px);
+}
+
+.domain-option-card.selected {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: var(--accent-primary);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+}
+
+.stage-select-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.stage-card-new {
+  padding: 24px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stage-card-new.selected {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: #10b981;
+}
+
+/* Navigation Buttons */
+.wizard-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 48px;
+}
+
+.btn-nav-prev {
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+.btn-nav-next {
+  background: var(--accent-primary-gradient);
+  color: white;
+  border: none;
+  font-weight: 700;
+  padding: 14px 32px;
+}
+
+@media (max-width: 768px) {
+  .upload-page-new {
+    padding: 32px 16px;
+  }
+  .wizard-form-card {
+    padding: 32px 24px;
+  }
+  .progress-label {
+    display: none;
+  }
+  .stage-select-row {
+    grid-template-columns: 1fr;
+  }
+}

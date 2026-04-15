@@ -1,0 +1,112 @@
+.main-layout-wrapper {
+  display: grid;
+  grid-template-columns: 240px 1fr 300px;
+  grid-template-areas: "sidebar main right";
+  min-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Mobile Top Nav */
+.mobile-top-nav {
+  display: none;
+  height: 64px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 16px;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
+}
+
+.mobile-logo-text {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+/* Layout Overlay */
+.layout-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 400;
+}
+
+.main-content-area {
+  grid-area: main;
+  background-color: var(--bg-primary);
+  min-width: 0;
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  height: 100vh;
+  position: relative;
+}
+
+/* Breakpoints & Transformations */
+@media (max-width: 1200px) {
+  .main-layout-wrapper {
+    grid-template-columns: 240px 1fr 0px;
+    grid-template-areas: "sidebar main";
+  }
+
+  .right-panel {
+    position: fixed;
+    top: 0;
+    right: -300px;
+    bottom: 0;
+    width: 300px;
+    z-index: 450;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: -20px 0 50px rgba(0,0,0,0.5);
+  }
+
+  .main-layout-wrapper.right-open .right-panel {
+    transform: translateX(-300px);
+  }
+}
+
+@media (max-width: 768px) {
+  .main-layout-wrapper {
+    grid-template-columns: 1fr;
+    grid-template-areas: "main";
+    padding-top: 64px; /* Space for mobile nav */
+  }
+
+  .mobile-top-nav {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -240px;
+    bottom: 0;
+    width: 240px;
+    z-index: 450;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 20px 0 50px rgba(0,0,0,0.5);
+  }
+
+  .main-layout-wrapper.sidebar-open .sidebar {
+    transform: translateX(240px);
+  }
+
+  .main-content-area {
+    height: calc(100vh - 64px);
+  }
+}
+
+@media (max-width: 768px) {
+  .main-layout-wrapper {
+    grid-template-columns: 1fr;
+    grid-template-areas: "main";
+  }
+}

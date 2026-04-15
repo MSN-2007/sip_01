@@ -1,0 +1,98 @@
+import { useState } from 'react';
+import { User, Bell, Shield, Save, CheckCircle2 } from 'lucide-react';
+import './Profile.css';
+
+export default function Settings() {
+  const [saveStatus, setSaveStatus] = useState(null);
+
+  const handleSave = () => {
+    setSaveStatus('saved');
+    setTimeout(() => setSaveStatus(null), 3000);
+  };
+
+  return (
+    <div className="home-page-new">
+       <header className="home-top-bar" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 16 }}>
+          <h1 className="section-title-new" style={{ fontSize: '2.5rem' }}>Settings</h1>
+          <p className="text-muted">Manage your profile, preferences, and account security.</p>
+       </header>
+
+       <div style={{ maxWidth: 800, marginTop: 40 }}>
+          
+          {/* Profile Section */}
+          <section className="kanban-card glass-card" style={{ padding: 32, marginBottom: 32 }}>
+             <div className="section-header-new" style={{ marginBottom: 24 }}>
+                <h2 className="section-title-new" style={{ fontSize: '1.25rem' }}><User size={20} style={{ color: 'var(--accent-primary)', marginRight: 12 }} /> Profile Settings</h2>
+             </div>
+             
+             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                   <div className="form-group">
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Display Name</label>
+                      <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue="Aanya Sharma" />
+                   </div>
+                   <div className="form-group">
+                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Username</label>
+                      <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue="@aanya_agri" />
+                   </div>
+                </div>
+                <div className="form-group">
+                   <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Professional Tagline</label>
+                   <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue="Sustainable Agriculture Specialist | AI Researcher" />
+                </div>
+             </div>
+          </section>
+
+          {/* Account Section */}
+          <section className="kanban-card glass-card" style={{ padding: 32, marginBottom: 32 }}>
+             <div className="section-header-new" style={{ marginBottom: 24 }}>
+                <h2 className="section-title-new" style={{ fontSize: '1.25rem' }}><Shield size={20} style={{ color: '#10b981', marginRight: 12 }} /> Account Security</h2>
+             </div>
+             
+             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                <div className="form-group">
+                   <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Email Address</label>
+                   <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue="aanya.s@university.edu" />
+                </div>
+                <button className="btn btn-outline btn-sm" style={{ width: 'fit-content' }}>Change Password</button>
+             </div>
+          </section>
+
+          {/* Notifications */}
+          <section className="kanban-card glass-card" style={{ padding: 32, marginBottom: 48 }}>
+             <div className="section-header-new" style={{ marginBottom: 24 }}>
+                <h2 className="section-title-new" style={{ fontSize: '1.25rem' }}><Bell size={20} style={{ color: '#fbbf24', marginRight: 12 }} /> Notifications</h2>
+             </div>
+             
+             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {[
+                   { label: 'Project Collaboration Requests', desc: 'Get notified when someone wants to join your project.' },
+                   { label: 'Platform Announcements', desc: 'Stay updated with new features and community news.' },
+                   { label: 'Messages', desc: 'Direct message notifications from collaborators.' }
+                ].map((item, i) => (
+                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < 2 ? '1px solid var(--border-subtle)' : 'none' }}>
+                      <div>
+                         <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>{item.label}</p>
+                         <p className="text-muted" style={{ fontSize: '0.8rem' }}>{item.desc}</p>
+                      </div>
+                      <div className="toggle-switch" style={{ width: 44, height: 24, background: 'var(--accent-primary)', borderRadius: 12, position: 'relative', cursor: 'pointer' }}>
+                         <div style={{ position: 'absolute', right: 2, top: 2, width: 20, height: 20, background: 'white', borderRadius: '50%' }} />
+                      </div>
+                   </div>
+                ))}
+             </div>
+          </section>
+
+          {/* Action Bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+             <button className="btn btn-primary" onClick={handleSave} style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 160 }}>
+                {saveStatus === 'saved' ? <CheckCircle2 size={18} /> : <Save size={18} />}
+                {saveStatus === 'saved' ? 'Changes Saved' : 'Save Changes'}
+             </button>
+             {saveStatus === 'saved' && <span style={{ color: '#10b981', fontSize: '0.9rem', fontWeight: 600 }}>Profile updated successfully!</span>}
+          </div>
+
+       </div>
+    </div>
+  );
+}

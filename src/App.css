@@ -1,0 +1,6 @@
+/* App.css — minimal reset, App.jsx doesn't need much */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

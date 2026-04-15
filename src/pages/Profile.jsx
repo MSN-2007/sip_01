@@ -25,15 +25,36 @@ const stageConfig = {
 export default function Profile() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { projects, users, user: currentUser } = useApp();
+  const { projects, user: currentUser } = useApp();
+  const [profileUser, setProfileUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const user = useMemo(() => {
-    return users.find(u => u.id === id) || currentUser;
-  }, [id, users, currentUser]);
+  // Fetch the requested user profile from Firestore, or use logged-in user
+  useEffect(() => {
+    const fetchUser = async () => {
+      setLoading(true);
+      if (currentUser && currentUser.id === id) {
+        setProfileUser(currentUser);
+        setLoading(false);
+      } else {
+        try {
+          const { getUserProfile } = await import('../services/db');
+          const doc = await getUserProfile(id);
+          setProfileUser(doc);
+        } catch (err) {
+          console.error("Failed to load profile", err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    fetchUser();
+  }, [id, currentUser]);
 
   const userProjects = useMemo(() => {
-    return projects.filter(p => p.userId === user.id);
-  }, [projects, user.id]);
+    if (!profileUser) return [];
+    return projects.filter(p => p.userId === profileUser.id);
+  }, [projects, profileUser]);
 
   const groupedProjects = useMemo(() => {
     return {
@@ -48,6 +69,16 @@ export default function Profile() {
     contributions: 14, // Mock
     communities: 6, // Mock
   };
+
+  if (loading) {
+     return <div className="profile-container-new" style={{ padding: 40, textAlign: 'center' }}>Loading Profile...</div>;
+  }
+
+  if (!profileUser) {
+     return <div className="profile-container-new" style={{ padding: 40, textAlign: 'center' }}>User Profile Not Found</div>;
+  }
+
+  const user = profileUser;
 
   return (
     <div className="profile-container-new">

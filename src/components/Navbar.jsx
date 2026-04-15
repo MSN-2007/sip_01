@@ -22,7 +22,7 @@ export default function Navbar() {
     { to: '/communities', icon: Users, label: 'Communities' },
     { to: '/messages', icon: MessageSquare, label: 'Messages' },
     { to: '/notifications', icon: Bell, label: 'Notifications', badge: unreadCount },
-    { to: '/profile/u1', icon: User, label: 'Profile' },
+    { to: user ? `/profile/${user.id}` : '/login', icon: User, label: 'Profile' },
   ];
 
   const isActive = (path) =>

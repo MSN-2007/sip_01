@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { mockUsers, mockProjects, mockCommunities, currentUser } from '../data/mockData';
 import { auth } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { getUserProfile } from '../services/db';
 
 const AppContext = createContext(null);
 
@@ -16,16 +17,25 @@ export function AppProvider({ children }) {
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        setUser({
-          id: firebaseUser.uid,
-          name: firebaseUser.displayName || 'Developer',
-          email: firebaseUser.email,
-          avatar: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'Dev')}&background=random`,
-          tagline: 'ProjectSpace Builder',
-          // We will fetch real followers/following etc. in Phase 3
-        });
+        try {
+          const userDoc = await getUserProfile(firebaseUser.uid);
+          if (userDoc) {
+            setUser(userDoc);
+          } else {
+            // Fallback if document missing
+            setUser({
+              id: firebaseUser.uid,
+              name: firebaseUser.displayName || 'Developer',
+              email: firebaseUser.email,
+              avatar: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'Dev')}&background=random`,
+              tagline: 'ProjectSpace Builder',
+            });
+          }
+        } catch (err) {
+          console.error("Error fetching user profile", err);
+        }
       } else {
         setUser(null);
       }
@@ -34,17 +44,26 @@ export function AppProvider({ children }) {
     
     return () => unsubscribe();
   }, []);
-  const [projects, setProjects] = useState(mockProjects);
-  const [communities, setCommunities] = useState(mockCommunities);
-  const [users] = useState(mockUsers);
-  const [following, setFollowing] = useState(['u3']);
-  const [joinedCommunities, setJoinedCommunities] = useState(['c1', 'c2', 'c6']);
-  const [likedProjects, setLikedProjects] = useState(['p2', 'p6']);
-  const [notifications, setNotifications] = useState([
-    { id: 'n1', type: 'collab', text: 'Deven Kapoor sent a Build With Me request on SoilSense', time: '2h ago', read: false },
-    { id: 'n2', type: 'follow', text: 'Lena Torres started following you', time: '5h ago', read: false },
-    { id: 'n3', type: 'like', text: 'Your project RainPredict received 12 new likes', time: '1d ago', read: true },
-  ]);
+  const [projects, setProjects] = useState([]);
+  const [communities, setCommunities] = useState([]);
+  const [users] = useState([]);
+  const [following, setFollowing] = useState([]);
+  const [joinedCommunities, setJoinedCommunities] = useState([]);
+  const [likedProjects, setLikedProjects] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    // Fetch global projects from Firebase on mount
+    import('../services/db').then(({ getProjects, getUsers }) => {
+      getProjects().then(fetchedProjects => {
+        setProjects(fetchedProjects);
+      }).catch(err => console.error("Error fetching projects", err));
+      
+      getUsers().then(fetchedUsers => {
+        setUsers(fetchedUsers);
+      }).catch(err => console.error("Error fetching users", err));
+    });
+  }, []);
 
   const toggleFollow = (userId) => {
     setFollowing(prev =>

@@ -14,17 +14,6 @@ import {
 import { useApp } from '../context/AppContext';
 import { auth } from '../config/firebase';
 import './Sidebar.css';
-const NAV_ITEMS = [
-  { to: '/', icon: Home, label: 'Home' },
-  { to: '/profile/u1', icon: User, label: 'Profile' },
-  { to: '/explore', icon: Package, label: 'Projects' },
-  { to: '/communities', icon: Globe, label: 'Community' },
-  { to: '/contributions', icon: BarChart2, label: 'Contributions' },
-  { to: '/connects', icon: Share2, label: 'Connects' },
-  { to: '/messages', icon: MessageSquare, label: 'Messages' },
-  { to: '/resume', icon: Sparkles, label: 'AI Resume' },
-];
-
 const BOTTOM_ITEMS = [
   { to: '/settings', icon: Settings, label: 'Settings' },
   { to: '/terms', icon: FileText, label: 'Terms & Conditions' },
@@ -39,7 +28,18 @@ export default function Sidebar({ onNavigate }) {
   };
 
   const isActive = (path) =>
-    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path.split('/u1')[0]);
+    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path.split('/')[1] ? `/${path.split('/')[1]}` : path);
+
+  const navItems = [
+    { to: '/', icon: Home, label: 'Home' },
+    { to: user ? `/profile/${user.id}` : '/login', icon: User, label: 'Profile' },
+    { to: '/explore', icon: Package, label: 'Projects' },
+    { to: '/communities', icon: Globe, label: 'Community' },
+    { to: '/contributions', icon: BarChart2, label: 'Contributions' },
+    { to: '/connects', icon: Share2, label: 'Connects' },
+    { to: '/messages', icon: MessageSquare, label: 'Messages' },
+    { to: '/resume', icon: Sparkles, label: 'AI Resume' },
+  ];
 
   return (
     <aside className="sidebar">
@@ -53,7 +53,7 @@ export default function Sidebar({ onNavigate }) {
 
         <nav className="sidebar-nav">
           <div className="nav-group">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const Icon = item.icon;
               return (
                 <Link

@@ -40,8 +40,13 @@ export async function getUserProfile(userId) {
   return null;
 }
 
+export async function getUsers() {
+  const snapshot = await getDocs(collection(db, 'users'));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+}
+
 // --- Seeding Data (Temporary Admin tool) ---
-import { mockProjects, mockCommunities } from '../data/mockData';
+import { mockProjects, mockCommunities, mockUsers } from '../data/mockData';
 
 export async function seedDatabase() {
   console.log("Starting DB seed...");
@@ -55,6 +60,11 @@ export async function seedDatabase() {
     await setDoc(doc(db, 'communities', c.id), c);
   }
   console.log("Seeded communities!");
+
+  for (const u of mockUsers) {
+    await setDoc(doc(db, 'users', u.id), u);
+  }
+  console.log("Seeded users!");
 
   return true;
 }

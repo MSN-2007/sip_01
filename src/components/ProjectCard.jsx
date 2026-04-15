@@ -31,7 +31,7 @@ const domainImages = {
 };
 
 export default function ProjectCard({ project }) {
-  const { likedProjects, toggleLike } = useApp();
+  const { likedProjects, toggleLike, user } = useApp();
   const isLiked = likedProjects.includes(project.id);
   const [localLikes, setLocalLikes] = useState(project.likes);
   const [isShareOpen, setIsShareOpen] = useState(false);
@@ -39,6 +39,10 @@ export default function ProjectCard({ project }) {
   const handleLike = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!user) {
+      alert("Please log in to like this project.");
+      return;
+    }
     toggleLike(project.id);
     setLocalLikes(prev => isLiked ? prev - 1 : prev + 1);
   };

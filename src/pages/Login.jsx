@@ -53,7 +53,7 @@ export default function Login() {
               <Mail className="auth-input-icon" size={18} />
               <input 
                 type="email" 
-                placeholder="you@university.edu"
+                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"

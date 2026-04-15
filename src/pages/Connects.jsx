@@ -8,6 +8,17 @@ export default function Connects() {
   const [search, setSearch] = useState('');
   const [requested, setRequested] = useState([]);
 
+  if (!currentUser) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '16px' }}>
+        <Users size={64} style={{ color: 'var(--text-muted)' }} />
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Connects</h2>
+        <p className="text-muted">You must be logged in to find and request collaborators.</p>
+        <a href="/login" className="btn btn-primary" style={{ marginTop: '12px' }}>Log In</a>
+      </div>
+    );
+  }
+
   const toggleRequest = (id) => {
     if (requested.includes(id)) {
       setRequested(requested.filter(rid => rid !== id));

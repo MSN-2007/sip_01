@@ -23,6 +23,17 @@ export default function Messages() {
     u4: [],
   });
 
+  if (!me) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '16px' }}>
+        <MessageSquare size={64} style={{ color: 'var(--text-muted)' }} />
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Messages</h2>
+        <p className="text-muted">You must be logged in to chat with other builders.</p>
+        <a href="/login" className="btn btn-primary" style={{ marginTop: '12px' }}>Log In</a>
+      </div>
+    );
+  }
+
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };

@@ -36,12 +36,36 @@ export default function ProjectDetail() {
     );
   }
 
-  const isLiked = likedProjects.includes(project.id);
-  const isFollowing = following.includes(project.userId);
-  const isOwn = project.userId === user.id;
+  const isLiked = user ? likedProjects.includes(project.id) : false;
+  const isFollowing = user ? following.includes(project.userId) : false;
+  const isOwn = user && project.userId === user.id;
   const stage = stageConfig[project.stage] || stageConfig.Idea;
   const sdgs = SDG_GOALS.filter(g => project.sdgTags?.includes(g.id));
   const relatedProjects = projects.filter(p => p.id !== id && p.domainTags.some(d => project.domainTags.includes(d))).slice(0, 2);
+
+  const handleLikeClick = () => {
+    if (!user) {
+      alert("Please log in to like this project.");
+      return;
+    }
+    toggleLike(project.id);
+  };
+
+  const handleCollabClick = () => {
+    if (!user) {
+      alert("Please log in to collaborate on projects.");
+      return;
+    }
+    setShowCollabModal(true);
+  };
+
+  const handleFollowClick = () => {
+    if (!user) {
+      alert("Please log in to follow builders.");
+      return;
+    }
+    toggleFollow(project.userId);
+  };
 
   const sendCollabRequest = () => {
     setCollabSent(true);
@@ -198,7 +222,7 @@ export default function ProjectDetail() {
                   <button
                     className={`btn btn-sm ${isFollowing ? 'btn-ghost' : 'btn-primary'}`}
                     style={{ flex: 1, borderRadius: '9999px' }}
-                    onClick={() => toggleFollow(project.userId)}
+                    onClick={handleFollowClick}
                   >
                     {isFollowing ? 'Following' : 'Follow'}
                   </button>
@@ -221,7 +245,7 @@ export default function ProjectDetail() {
                 <button
                   className="btn btn-primary"
                   style={{ width: '100%', justifyContent: 'center', borderRadius: '9999px' }}
-                  onClick={() => setShowCollabModal(true)}
+                  onClick={handleCollabClick}
                 >
                   <Zap size={16} />
                   {project.collaborationCTA}
@@ -229,7 +253,7 @@ export default function ProjectDetail() {
                 <button
                   className={`btn ${isLiked ? 'btn-ghost' : 'btn-secondary'}`}
                   style={{ width: '100%', justifyContent: 'center', borderRadius: '9999px' }}
-                  onClick={() => toggleLike(project.id)}
+                  onClick={handleLikeClick}
                 >
                   <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} style={{ color: isLiked ? '#ff6b6b' : 'currentColor' }} />
                   {isLiked ? 'Liked' : 'Like This Project'}

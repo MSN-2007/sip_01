@@ -52,7 +52,7 @@ export default function Signup() {
       navigate('/');
     } catch (err) {
       console.error(err);
-      setError(err.message.includes('auth/') ? 'Failed to create account (email might be in use).' : 'An error occurred.');
+      setError(`Signup Failed: ${err.message}`);
     } finally {
       setLoading(false);
     }

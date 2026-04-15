@@ -13,21 +13,23 @@ export default function Home() {
   const [isFabOpen, setIsFabOpen] = useState(false);
 
   const personalizedFeed = useMemo(() => {
-    let base = [...projects];
+    let base = [...(projects || [])];
     if (searchQuery) {
       base = base.filter(p => 
-        p.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        p.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
         p.problemTitle?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
     if (activeDomain !== 'All') {
-      base = base.filter(p => p.domainTags.some(d => d.includes(activeDomain)));
+      base = base.filter(p => p.domainTags?.some(d => d.includes(activeDomain)));
     }
 
     // Recommendation logic: Simple match on user's skills/domain
     const recommended = base.filter(p => 
-      p.domainTags.some(d => user.tagline.includes(d)) || 
-      p.techStack.some(t => user.tagline.includes(t))
+      user?.tagline && (
+        p.domainTags?.some(d => user.tagline.includes(d)) || 
+        p.techStack?.some(t => user.tagline.includes(t))
+      )
     ).slice(0, 3);
 
     const trending = base
@@ -38,7 +40,7 @@ export default function Home() {
     const explore = base.filter(p => !recommended.includes(p) && !trending.includes(p)).slice(0, 4);
 
     return { recommended, trending, explore };
-  }, [projects, searchQuery, activeDomain, user.tagline]);
+  }, [projects, searchQuery, activeDomain, user?.tagline]);
 
   return (
     <div className="home-page-new">

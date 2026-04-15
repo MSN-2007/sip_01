@@ -1,15 +1,28 @@
 import { useState } from 'react';
-import { User, Bell, Shield, Save, CheckCircle2 } from 'lucide-react';
+import { User, Bell, Shield, Save, CheckCircle2, Database } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { seedDatabase } from '../services/db';
 import './Profile.css';
 
 export default function Settings() {
   const { theme, toggleTheme } = useApp();
   const [saveStatus, setSaveStatus] = useState(null);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   const handleSave = () => {
     setSaveStatus('saved');
     setTimeout(() => setSaveStatus(null), 3000);
+  };
+
+  const handleSeed = async () => {
+    setIsSeeding(true);
+    try {
+      await seedDatabase();
+      alert("Database Seeded Successfully! The cloud now has your data!");
+    } catch (e) {
+      alert("Error seeding database: " + e.message);
+    }
+    setIsSeeding(false);
   };
 
   return (
@@ -116,6 +129,15 @@ export default function Settings() {
              <button className="btn btn-primary" onClick={handleSave} style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 160 }}>
                 {saveStatus === 'saved' ? <CheckCircle2 size={18} /> : <Save size={18} />}
                 {saveStatus === 'saved' ? 'Changes Saved' : 'Save Changes'}
+             </button>
+             <button 
+                className="btn btn-outline" 
+                onClick={handleSeed}
+                disabled={isSeeding}
+                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+             >
+                <Database size={18} />
+                {isSeeding ? 'Pushing Data...' : '[Admin] Seed Database'}
              </button>
              {saveStatus === 'saved' && <span style={{ color: '#10b981', fontSize: '0.9rem', fontWeight: 600 }}>Profile updated successfully!</span>}
           </div>

@@ -1,10 +1,39 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { mockUsers, mockProjects, mockCommunities, currentUser } from '../data/mockData';
+import { auth } from '../config/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
-  const [user] = useState(currentUser);
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    if (!auth) {
+      console.warn("Firebase Auth not initialized. Ensure .env variables are loaded.");
+      setAuthLoading(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          id: firebaseUser.uid,
+          name: firebaseUser.displayName || 'Developer',
+          email: firebaseUser.email,
+          avatar: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'Dev')}&background=random`,
+          tagline: 'ProjectSpace Builder',
+          // We will fetch real followers/following etc. in Phase 3
+        });
+      } else {
+        setUser(null);
+      }
+      setAuthLoading(false);
+    });
+    
+    return () => unsubscribe();
+  }, []);
   const [projects, setProjects] = useState(mockProjects);
   const [communities, setCommunities] = useState(mockCommunities);
   const [users] = useState(mockUsers);

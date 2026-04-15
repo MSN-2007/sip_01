@@ -12,6 +12,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { auth } from '../config/firebase';
 import './Sidebar.css';
 const NAV_ITEMS = [
   { to: '/', icon: Home, label: 'Home' },
@@ -86,12 +87,34 @@ export default function Sidebar({ onNavigate }) {
           </div>
         </nav>
 
-        <div className="sidebar-user">
-          <img src={user.avatar} alt={user.name} className="user-avatar" />
-          <div className="user-info">
-            <p className="user-name">{user.name}</p>
-            <p className="user-role">Premium Member</p>
-          </div>
+        <div className="sidebar-user" style={{ flexDirection: 'column', alignItems: 'stretch' }}>
+          {user ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                <img src={user.avatar} alt={user.name} className="user-avatar" />
+                <div className="user-info">
+                  <p className="user-name">{user.name}</p>
+                  <p className="user-role" style={{ fontSize: '0.7rem' }}>{user.tagline}</p>
+                </div>
+              </div>
+              <button 
+                className="btn btn-outline btn-sm" 
+                onClick={() => auth.signOut()}
+                style={{ width: '100%', fontSize: '0.75rem', padding: '6px' }}
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <Link to="/login" className="btn btn-primary btn-sm" onClick={handleNavigate} style={{ textAlign: 'center' }}>
+                Log In
+              </Link>
+              <Link to="/signup" className="btn btn-outline btn-sm" onClick={handleNavigate} style={{ textAlign: 'center' }}>
+                Sign Up
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </aside>

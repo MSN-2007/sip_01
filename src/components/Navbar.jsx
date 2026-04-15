@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Compass, Users, MessageSquare, Bell, User, Plus,
-  Sparkles, Search, Crown, LogOut, Settings, MoreHorizontal,
+  Sparkles, Search, MoreHorizontal,
   Home, Moon, Sun
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { auth } from '../config/firebase';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -70,33 +71,43 @@ export default function Navbar() {
 
         {/* User Menu */}
         <div className="user-menu-wrapper mt-auto">
-          <button
-            className="user-menu-btn"
-            onClick={() => setShowUserMenu(!showUserMenu)}
-          >
-           <div className="user-menu-btn-content">
-             <img src={user.avatar} alt={user.name} className="avatar" style={{ width: 40, height: 40 }} />
-             <div className="user-info-text">
-               <p className="user-name">{user.name}</p>
-               <p className="user-handle">{user.tagline.substring(0, 15)}...</p>
-             </div>
-             <MoreHorizontal size={18} className="chevron" />
-           </div>
-          </button>
-
-          {showUserMenu && (
-            <div className="dropdown user-dropdown">
-               <Link to="/resume" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
-                <Sparkles size={18} /> Resume Builder
-                {!user.isPremium && <span className="dropdown-badge">Premium</span>}
-              </Link>
-              <Link to="/settings" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
-                <Settings size={18} /> Settings
-              </Link>
-              <div className="divider" />
-              <button className="dropdown-item logout">
-                Log out @{user.name.replace(/\s+/g, '').toLowerCase()}
+          {user ? (
+            <>
+              <button
+                className="user-menu-btn"
+                onClick={() => setShowUserMenu(!showUserMenu)}
+              >
+               <div className="user-menu-btn-content">
+                 <img src={user.avatar} alt={user.name} className="avatar" style={{ width: 40, height: 40 }} />
+                 <div className="user-info-text">
+                   <p className="user-name">{user.name}</p>
+                   <p className="user-handle">{user?.tagline?.substring(0, 15)}...</p>
+                 </div>
+                 <MoreHorizontal size={18} className="chevron" />
+               </div>
               </button>
+
+              {showUserMenu && (
+                <div className="dropdown user-dropdown">
+                   <Link to="/resume" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
+                    <Sparkles size={18} /> Resume Builder
+                    {!user.isPremium && <span className="dropdown-badge">Premium</span>}
+                  </Link>
+                  <Link to="/settings" className="dropdown-item" onClick={() => setShowUserMenu(false)}>
+                    <Settings size={18} /> Settings
+                  </Link>
+                  <div className="divider" />
+                  <button className="dropdown-item logout" onClick={() => auth.signOut()}>
+                    Log out @{user.name.replace(/\s+/g, '').toLowerCase()}
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px' }}>
+              <Link to="/login" className="btn btn-primary btn-sm" style={{ textAlign: 'center' }}>
+                Log In
+              </Link>
             </div>
           )}
         </div>

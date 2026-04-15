@@ -80,6 +80,17 @@ export default function ResumeBuilder() {
   const [downloadDone, setDownloadDone] = useState(false);
   const resumeRef = useRef(null);
 
+  if (!user) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '16px' }}>
+        <Brain size={64} style={{ color: 'var(--text-muted)' }} />
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>AI Resume Builder</h2>
+        <p className="text-muted">You must be logged in to generate your AI profile.</p>
+        <a href="/login" className="btn btn-primary" style={{ marginTop: '12px' }}>Log In to Continue</a>
+      </div>
+    );
+  }
+
   const loadMessages = [
     `Scanning ${user.name}'s project history…`,
     'Ranking technical proficiencies by usage…',

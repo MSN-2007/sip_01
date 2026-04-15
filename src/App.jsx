@@ -13,6 +13,8 @@ import Contributions from './pages/Contributions';
 import Connects from './pages/Connects';
 import Settings from './pages/Settings';
 import Terms from './pages/Terms';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
       <BrowserRouter>
         <MainLayout>
           <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route path="/" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/project/:id" element={<ProjectDetail />} />

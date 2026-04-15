@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { User, Bell, Shield, Save, CheckCircle2 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import './Profile.css';
 
 export default function Settings() {
+  const { theme, toggleTheme } = useApp();
   const [saveStatus, setSaveStatus] = useState(null);
 
   const handleSave = () => {
@@ -43,13 +45,39 @@ export default function Settings() {
              </div>
           </section>
 
-          {/* Account Section */}
+          {/* Account Section & Preferences */}
           <section className="kanban-card glass-card" style={{ padding: 32, marginBottom: 32 }}>
              <div className="section-header-new" style={{ marginBottom: 24 }}>
-                <h2 className="section-title-new" style={{ fontSize: '1.25rem' }}><Shield size={20} style={{ color: '#10b981', marginRight: 12 }} /> Account Security</h2>
+                <h2 className="section-title-new" style={{ fontSize: '1.25rem' }}><Shield size={20} style={{ color: '#10b981', marginRight: 12 }} /> Preferences & Security</h2>
              </div>
              
-             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                {/* Theme Toggle */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 16, borderBottom: '1px solid var(--border-subtle)' }}>
+                   <div>
+                      <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>Appearance</p>
+                      <p className="text-muted" style={{ fontSize: '0.8rem' }}>Toggle between Bright Mode and Dark Mode</p>
+                   </div>
+                   <button 
+                     onClick={toggleTheme}
+                     className="toggle-switch" 
+                     style={{ 
+                       width: 44, height: 24, 
+                       background: theme === 'dark' ? 'var(--accent-primary)' : 'var(--border-subtle)', 
+                       borderRadius: 12, position: 'relative', cursor: 'pointer', border: 'none'
+                     }}>
+                      <div style={{ 
+                        position: 'absolute', 
+                        right: theme === 'dark' ? 2 : 'auto', 
+                        left: theme === 'dark' ? 'auto' : 2, 
+                        top: 2, width: 20, height: 20, 
+                        background: 'white', borderRadius: '50%',
+                        transition: 'all 0.3s'
+                      }} />
+                   </button>
+                </div>
+
+                {/* Password / Email */}
                 <div className="form-group">
                    <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Email Address</label>
                    <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue="aanya.s@university.edu" />

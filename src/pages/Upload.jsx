@@ -51,10 +51,15 @@ const defaultForm = {
 
 export default function Upload() {
   const navigate = useNavigate();
-  const { addProject, user } = useApp();
+  const { addProject: addProjectToCache, user } = useApp();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(defaultForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fallback to prevent crash if unauthenticated
+  if (!user) {
+    return <div style={{ padding: 40, textAlign: 'center' }}>Please log in to create a project.</div>;
+  }
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
@@ -79,20 +84,23 @@ export default function Upload() {
     setIsSubmitting(true);
     const newProject = {
       ...form,
-      id: `p${Date.now()}`,
       userId: user.id,
-      user,
-      likes: 0,
-      views: 100,
+      user: { id: user.id, name: user.name, avatar: user.avatar }, // Keep slim user copy
       createdAt: new Date().toISOString().split('T')[0],
       contributors: 1,
       collaborationCTA: form.stage === 'Production' ? 'Contribute' : 'Build With Me'
     };
     
-    // Simulate API delay
-    await new Promise(r => setTimeout(r, 1500));
-    addProject(newProject);
-    navigate(`/project/${newProject.id}`);
+    try {
+      const { addProject } = await import('../services/db');
+      const savedProject = await addProject(newProject);
+      addProjectToCache(savedProject);
+      navigate(`/project/${savedProject.id}`);
+    } catch (e) {
+      console.error("Error creating project", e);
+      alert("Failed to save project. Ensure Database Seed has been setup or Firestore rules allow writing.");
+      setIsSubmitting(false);
+    }
   };
 
   return (

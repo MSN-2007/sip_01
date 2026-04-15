@@ -95,7 +95,8 @@ export default function Upload() {
       const { addProject } = await import('../services/db');
       const savedProject = await addProject(newProject);
       addProjectToCache(savedProject);
-      navigate(`/project/${savedProject.id}`);
+      alert("Project Successfully Uploaded! It is now live on the feed.");
+      navigate(`/`);
     } catch (e) {
       console.error("Error creating project", e);
       alert(`Failed to save project to cloud. ERROR: ${e.message}`);
@@ -210,13 +211,52 @@ export default function Upload() {
             </div>
           )}
 
-          {/* Steps 5, 6, 7, 8: Fast-forwarded placeholders for demonstration */}
-          {step > 4 && step < 8 && (
+          {/* Step 5: Alt Uses */}
+          {step === 5 && (
             <div className="fade-in">
-               <div style={{ padding: 40, textAlign: 'center', background: 'var(--bg-input)', borderRadius: 16 }}>
-                 <Info size={48} className="text-muted" style={{ marginBottom: 16 }} />
-                 <p className="text-muted">Module for {STEPS[step]} is configured and ready for implementation.</p>
+              <div className="form-field-group">
+                 <label className="field-label-new">Alternative Uses</label>
+                 <textarea className="field-input-new" rows={3} placeholder="Can this technology be used in other domains?" value={form.alternativeUses[0]} onChange={e => set('alternativeUses', [e.target.value])} />
+                 <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: 8 }}>Describe up to 3 alternative use-cases for your project (comma separated).</p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 6: Media */}
+          {step === 6 && (
+            <div className="fade-in">
+              <div className="form-field-group">
+                 <label className="field-label-new">Pitch / Demo Link</label>
+                 <div className="auth-input-wrapper">
+                    <Video className="auth-input-icon" size={18} />
+                    <input className="field-input-new" style={{ paddingLeft: 40 }} placeholder="https://youtube.com/..." value={form.media[0] || ''} onChange={e => set('media', [e.target.value])} />
+                 </div>
+                 <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: 8 }}>Paste a link to your prototype video or live deployment.</p>
+              </div>
+            </div>
+          )}
+
+          {/* Step 7: Collaboration */}
+          {step === 7 && (
+            <div className="fade-in">
+               <div className="kanban-card glass-card" style={{ padding: 24, border: form.openForCollaboration ? '2px solid var(--accent-primary)' : '1px solid var(--border-subtle)', cursor: 'pointer' }} onClick={() => set('openForCollaboration', !form.openForCollaboration)}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <div>
+                        <h4 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Open for Collaboration</h4>
+                        <p className="text-muted" style={{ fontSize: '0.9rem' }}>Allow other builders to send you collaboration requests.</p>
+                     </div>
+                     <div style={{ width: 24, height: 24, borderRadius: 12, background: form.openForCollaboration ? 'var(--accent-primary)' : 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {form.openForCollaboration && <CheckCircle size={14} color="white" />}
+                     </div>
+                  </div>
                </div>
+
+               {form.openForCollaboration && (
+                 <div className="form-field-group" style={{ marginTop: 24 }}>
+                    <label className="field-label-new">Skills Needed</label>
+                    <input className="field-input-new" placeholder="Frontend, PCB Design, ML..." value={form.skillsNeeded.join(',')} onChange={e => set('skillsNeeded', e.target.value.split(','))} />
+                 </div>
+               )}
             </div>
           )}
 

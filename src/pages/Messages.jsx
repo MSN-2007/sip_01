@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Send, Search, MessageSquare, MoreVertical, Paperclip, Smile } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import './Messages.css';
 
 export default function Messages() {
-  const { users, user: me } = useApp();
-  const contacts = users.filter(u => u.id !== me.id);
+  const navigate = useNavigate();
+  const { users, user: me, authLoading } = useApp();
+  const contacts = users.filter(u => u.id !== (me?.id || undefined));
   const [selected, setSelected] = useState(contacts[0]);
   const [input, setInput] = useState('');
   const chatEndRef = useRef(null);
@@ -23,15 +25,14 @@ export default function Messages() {
     u4: [],
   });
 
-  if (!me) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '16px' }}>
-        <MessageSquare size={64} style={{ color: 'var(--text-muted)' }} />
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Messages</h2>
-        <p className="text-muted">You must be logged in to chat with other builders.</p>
-        <a href="/login" className="btn btn-primary" style={{ marginTop: '12px' }}>Log In</a>
-      </div>
-    );
+  useEffect(() => {
+    if (!authLoading && !me) {
+      navigate('/login');
+    }
+  }, [me, authLoading, navigate]);
+
+  if (authLoading || !me) {
+    return <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>Loading...</div>;
   }
 
   const scrollToBottom = () => {

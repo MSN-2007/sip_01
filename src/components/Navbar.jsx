@@ -33,8 +33,8 @@ export default function Navbar() {
       <div className="navbar-inner">
         {/* Logo */}
         <Link to="/" className="navbar-logo">
-          <div className="logo-icon">
-            <Sparkles size={24} color="#fff" />
+          <div className="logo-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+            AD
           </div>
         </Link>
 

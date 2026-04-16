@@ -100,6 +100,11 @@ export function AppProvider({ children }) {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
+  const addCommunity = (community) => {
+    setCommunities(prev => [community, ...prev]);
+    setJoinedCommunities(prev => [...prev, community.id]);
+  };
+
   const [theme, setTheme] = useState('dark');
 
   const toggleTheme = () => {
@@ -116,9 +121,9 @@ export function AppProvider({ children }) {
 
   return (
     <AppContext.Provider value={{
-      user, projects, communities, users,
+      user, authLoading, projects, communities, users,
       following, joinedCommunities, likedProjects, notifications,
-      theme, toggleFollow, toggleJoinCommunity, toggleLike, addProject, markAllNotificationsRead, toggleTheme
+      theme, toggleFollow, toggleJoinCommunity, toggleLike, addProject, addCommunity, markAllNotificationsRead, toggleTheme
     }}>
       {children}
     </AppContext.Provider>

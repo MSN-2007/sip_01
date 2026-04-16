@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ChevronRight, 
@@ -51,14 +51,20 @@ const defaultForm = {
 
 export default function Upload() {
   const navigate = useNavigate();
-  const { addProject: addProjectToCache, user } = useApp();
+  const { addProject: addProjectToCache, user, authLoading } = useApp();
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(defaultForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
+
   // Fallback to prevent crash if unauthenticated
-  if (!user) {
-    return <div style={{ padding: 40, textAlign: 'center' }}>Please log in to create a project.</div>;
+  if (authLoading || !user) {
+    return <div style={{ padding: 40, textAlign: 'center' }}>Loading...</div>;
   }
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));

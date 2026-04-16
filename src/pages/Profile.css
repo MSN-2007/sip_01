@@ -250,6 +250,21 @@
   }
 }
 
+.settings-grid-new {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .settings-grid-new {
+    grid-template-columns: 1fr;
+  }
+  .home-page-new {
+    padding: 24px 16px;
+  }
+}
+
 /* Connects Page Specific Layout */
 .connects-layout-grid {
   display: grid;

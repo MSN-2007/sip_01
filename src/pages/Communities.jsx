@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import CreateCommunityModal from '../components/CreateCommunityModal';
 import { 
   Users, 
   Search, 
@@ -15,9 +17,19 @@ import './Communities.css';
 const CATEGORIES = ['All', 'Agriculture', 'Hardware', 'AI/ML', 'Healthcare', 'Education', 'Software', 'Social Impact'];
 
 export default function Communities() {
-  const { communities, joinedCommunities, toggleJoinCommunity } = useApp();
+  const { communities, joinedCommunities, toggleJoinCommunity, user } = useApp();
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleCreateCommunityClick = () => {
+    if (!user) {
+      navigate('/login');
+    } else {
+      setIsModalOpen(true);
+    }
+  };
 
   const filtered = useMemo(() => {
     let result = communities.filter(c => !joinedCommunities.includes(c.id));
@@ -45,7 +57,7 @@ export default function Communities() {
         <h1 className="communities-title-new">Communities</h1>
         <p className="communities-subtitle-new">Scale your impact. Join domain-specific builder groups.</p>
         
-        <div style={{ marginTop: 32, display: 'flex', gap: 16 }}>
+        <div style={{ marginTop: 32, display: 'flex', flexWrap: 'wrap', gap: 16 }}>
            <div className="search-container-new" style={{ maxWidth: 600, flex: 1 }}>
               <Search className="search-icon-new" size={20} />
               <input 
@@ -55,6 +67,13 @@ export default function Communities() {
                 onChange={e => setSearchQuery(e.target.value)}
               />
            </div>
+           <button 
+             className="btn btn-primary" 
+             style={{ padding: '0 24px' }}
+             onClick={handleCreateCommunityClick}
+           >
+             Create Community
+           </button>
         </div>
       </header>
 
@@ -96,6 +115,7 @@ export default function Communities() {
          </div>
       </section>
 
+      <CreateCommunityModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

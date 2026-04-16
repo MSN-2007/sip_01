@@ -45,8 +45,8 @@ export default function Sidebar({ onNavigate }) {
     <aside className="sidebar">
       <div className="sidebar-inner">
         <Link to="/" className="sidebar-logo">
-          <div className="logo-sparkle">
-            <Sparkles size={20} fill="#fff" />
+          <div className="logo-sparkle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
+            AD
           </div>
           <span className="logo-text">ProjectSpace</span>
         </Link>

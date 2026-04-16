@@ -5,7 +5,7 @@ import { seedDatabase } from '../services/db';
 import './Profile.css';
 
 export default function Settings() {
-  const { theme, toggleTheme } = useApp();
+  const { theme, toggleTheme, user, authLoading } = useApp();
   const [saveStatus, setSaveStatus] = useState(null);
   const [isSeeding, setIsSeeding] = useState(false);
 
@@ -25,6 +25,20 @@ export default function Settings() {
     setIsSeeding(false);
   };
 
+  if (authLoading) {
+    return <div className="home-page-new" style={{ padding: 40, textAlign: 'center' }}>Loading Settings...</div>;
+  }
+
+  if (!user) {
+    return (
+      <div className="home-page-new" style={{ padding: 40, textAlign: 'center' }}>
+        <h2>Not Logged In</h2>
+        <p className="text-muted">You must log in to view settings.</p>
+        <a href="/login" className="btn btn-primary" style={{ marginTop: 12 }}>Log In</a>
+      </div>
+    );
+  }
+
   return (
     <div className="home-page-new">
        <header className="home-top-bar" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 16 }}>
@@ -41,19 +55,19 @@ export default function Settings() {
              </div>
              
              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                <div className="settings-grid-new">
                    <div className="form-group">
                       <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Display Name</label>
-                      <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue="Aanya Sharma" />
+                      <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue={user.name || ''} />
                    </div>
                    <div className="form-group">
                       <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Username</label>
-                      <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue="@aanya_agri" />
+                      <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue={`@${(user.name || 'user').replace(/\s+/g, '').toLowerCase()}`} />
                    </div>
                 </div>
                 <div className="form-group">
                    <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Professional Tagline</label>
-                   <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue="Sustainable Agriculture Specialist | AI Researcher" />
+                   <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue={user.tagline || ''} />
                 </div>
              </div>
           </section>
@@ -93,7 +107,7 @@ export default function Settings() {
                 {/* Password / Email */}
                 <div className="form-group">
                    <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Email Address</label>
-                   <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue="aanya.s@university.edu" />
+                   <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue={user.email || ''} readOnly />
                 </div>
                 <button className="btn btn-outline btn-sm" style={{ width: 'fit-content' }}>Change Password</button>
              </div>
@@ -125,7 +139,7 @@ export default function Settings() {
           </section>
 
           {/* Action Bar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
              <button className="btn btn-primary" onClick={handleSave} style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 160 }}>
                 {saveStatus === 'saved' ? <CheckCircle2 size={18} /> : <Save size={18} />}
                 {saveStatus === 'saved' ? 'Changes Saved' : 'Save Changes'}

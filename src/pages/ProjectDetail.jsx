@@ -45,7 +45,7 @@ export default function ProjectDetail() {
 
   const handleLikeClick = () => {
     if (!user) {
-      alert("Please log in to like this project.");
+      navigate('/login');
       return;
     }
     toggleLike(project.id);
@@ -53,7 +53,7 @@ export default function ProjectDetail() {
 
   const handleCollabClick = () => {
     if (!user) {
-      alert("Please log in to collaborate on projects.");
+      navigate('/login');
       return;
     }
     setShowCollabModal(true);
@@ -61,7 +61,7 @@ export default function ProjectDetail() {
 
   const handleFollowClick = () => {
     if (!user) {
-      alert("Please log in to follow builders.");
+      navigate('/login');
       return;
     }
     toggleFollow(project.userId);
@@ -226,9 +226,18 @@ export default function ProjectDetail() {
                   >
                     {isFollowing ? 'Following' : 'Follow'}
                   </button>
-                  <Link to="/messages" className="btn btn-ghost btn-sm btn-icon" style={{ borderRadius: '9999px' }}>
+                  <button 
+                    className="btn btn-ghost btn-sm btn-icon" style={{ borderRadius: '9999px' }}
+                    onClick={() => {
+                      if (!user) {
+                        navigate('/login');
+                      } else {
+                        navigate('/messages');
+                      }
+                    }}
+                  >
                     <MessageSquare size={16} />
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>

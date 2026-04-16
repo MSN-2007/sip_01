@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Zap, Layers, ArrowRight, Share2, Code2, Cpu, Globe, Sprout, HeartPulse } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import ShareModal from './ShareModal';
@@ -31,6 +31,7 @@ const domainImages = {
 };
 
 export default function ProjectCard({ project }) {
+  const navigate = useNavigate();
   const { likedProjects, toggleLike, user } = useApp();
   const isLiked = likedProjects.includes(project.id);
   const [localLikes, setLocalLikes] = useState(project.likes);
@@ -40,7 +41,7 @@ export default function ProjectCard({ project }) {
     e.preventDefault();
     e.stopPropagation();
     if (!user) {
-      alert("Please log in to like this project.");
+      navigate('/login');
       return;
     }
     toggleLike(project.id);

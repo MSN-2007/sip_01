@@ -113,9 +113,9 @@ export default function ProjectDetail() {
 
               {/* Stats */}
               <div className="pd-stats-row">
-                <span className="pd-stat"><Heart size={15} /> {project.likes.toLocaleString()} likes</span>
-                <span className="pd-stat"><Eye size={15} /> {project.views.toLocaleString()} views</span>
-                <span className="pd-stat"><Users size={15} /> {project.collaborationRequests} requests</span>
+                <span className="pd-stat"><Heart size={15} /> {(project.likes || 0).toLocaleString()} likes</span>
+                <span className="pd-stat"><Eye size={15} /> {(project.views || 0).toLocaleString()} views</span>
+                <span className="pd-stat"><Users size={15} /> {project.collaborationRequests || 0} requests</span>
               </div>
             </div>
 
@@ -205,15 +205,15 @@ export default function ProjectDetail() {
               </Link>
               <div className="pd-builder-stats">
                 <div className="pdb-stat">
-                  <span className="stat-value">{project.user.projects}</span>
+                  <span className="stat-value">{project.user?.projects || 0}</span>
                   <span className="stat-label">Projects</span>
                 </div>
                 <div className="pdb-stat">
-                  <span className="stat-value">{project.user.followers.toLocaleString()}</span>
+                  <span className="stat-value">{(project.user?.followers || 0).toLocaleString()}</span>
                   <span className="stat-label">Followers</span>
                 </div>
                 <div className="pdb-stat">
-                  <span className="stat-value">{project.user.sdgScore}</span>
+                  <span className="stat-value">{project.user?.sdgScore || 0}</span>
                   <span className="stat-label">SDG Score</span>
                 </div>
               </div>

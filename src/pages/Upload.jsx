@@ -92,7 +92,16 @@ export default function Upload() {
     const newProject = {
       ...form,
       userId: user.id,
-      user: { id: user.id, name: user.name, avatar: user.avatar, tagline: user.tagline || 'Builder', location: user.location || 'Global' },
+      user: { 
+        id: user.id, 
+        name: user.name, 
+        avatar: user.avatar, 
+        tagline: user.tagline || 'Builder', 
+        location: user.location || 'Global',
+        projects: user.projects || 0,
+        followers: user.followers || 0,
+        sdgScore: user.sdgScore || 0
+      },
       createdAt: new Date().toISOString().split('T')[0],
       contributors: 1,
       collaborationCTA: form.stage === 'Production' ? 'Contribute' : 'Build With Me',

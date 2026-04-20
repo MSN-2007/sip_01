@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { TECH_STACKS, DOMAINS } from '../data/mockData';
+import { addProject } from '../services/db';
 import './Upload.css';
 
 const STEPS = [
@@ -91,14 +92,24 @@ export default function Upload() {
     const newProject = {
       ...form,
       userId: user.id,
-      user: { id: user.id, name: user.name, avatar: user.avatar }, // Keep slim user copy
+      user: { id: user.id, name: user.name, avatar: user.avatar, tagline: user.tagline || 'Builder', location: user.location || 'Global' },
       createdAt: new Date().toISOString().split('T')[0],
       contributors: 1,
-      collaborationCTA: form.stage === 'Production' ? 'Contribute' : 'Build With Me'
+      collaborationCTA: form.stage === 'Production' ? 'Contribute' : 'Build With Me',
+      // Schema alignment fixes:
+      longDescription: `${form.problemExplained}\n\n${form.solutionApproach}`,
+      sdgTags: [], // Not currently in form, but required for detail page
+      proofOfWork: {
+         images: [],
+         videoUrl: form.media[0] || null,
+         patentNumber: null
+      },
+      likes: 0,
+      views: 0,
+      collaborationRequests: 0
     };
     
     try {
-      const { addProject } = await import('../services/db');
       const savedProject = await addProject(newProject);
       addProjectToCache(savedProject);
       alert("Project Successfully Uploaded! It is now live on the feed.");

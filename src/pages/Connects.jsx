@@ -3,6 +3,11 @@ import { Users, UserPlus, MessageSquare, Briefcase, Star, Search, ArrowRight, Ch
 import { useApp } from '../context/AppContext';
 import './Profile.css';
 
+// Demo-mode pending request — gives the panel life during showcase
+const DEMO_PENDING = [
+  { id: 'demo_req_1', from: 'u2', to: 'u1', status: 'pending' },
+];
+
 export default function Connects() {
   const { users, user: currentUser } = useApp();
   const [search, setSearch] = useState('');
@@ -11,11 +16,15 @@ export default function Connects() {
   const [loadingAction, setLoadingAction] = useState(null);
 
   useEffect(() => {
-    if (currentUser) {
-      import('../services/db').then(({ getPendingRequests }) => {
-        getPendingRequests(currentUser.id).then(reqs => setPendingRequests(reqs));
-      });
-    }
+    if (!currentUser) return;
+    import('../services/db').then(({ getPendingRequests }) => {
+      getPendingRequests(currentUser.id)
+        .then(reqs => {
+          // Use real Firestore data if available, otherwise fall back to demo data
+          setPendingRequests(reqs.length > 0 ? reqs : DEMO_PENDING);
+        })
+        .catch(() => setPendingRequests(DEMO_PENDING));
+    }).catch(() => setPendingRequests(DEMO_PENDING));
   }, [currentUser]);
 
   if (!currentUser) {

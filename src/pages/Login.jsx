@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../config/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
-import { Layers, Mail, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { Layers, Mail, Lock, ArrowRight, Loader2, Play } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 const GoogleIcon = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -22,6 +23,7 @@ import './Auth.css';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { loginAsDemo } = useApp();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -55,8 +57,20 @@ export default function Login() {
       await signInWithPopup(auth, provider);
       navigate('/');
     } catch (err) {
-      console.error(err);
-      setError(`Failed to sign in with ${providerName === 'google' ? 'Google' : 'GitHub'}.`);
+      console.error("Social Login Error:", err);
+      let friendlyMessage = `Failed to sign in with ${providerName === 'google' ? 'Google' : 'GitHub'}.`;
+      
+      if (err.code === 'auth/popup-closed-by-user') {
+        friendlyMessage = 'Login popup was closed before completion.';
+      } else if (err.code === 'auth/unauthorized-domain') {
+        friendlyMessage = 'This domain is not authorized for Firebase Auth. Please check Firebase Console.';
+      } else if (err.code === 'auth/operation-not-allowed') {
+        friendlyMessage = `Social login provider not enabled in Firebase Console.`;
+      } else {
+        friendlyMessage += ` Error: ${err.message}`;
+      }
+      
+      setError(friendlyMessage);
     } finally {
       setLoading(false);
     }
@@ -137,6 +151,20 @@ export default function Login() {
         <p className="auth-footer text-muted">
           Don't have an account? <Link to="/signup">Create one</Link>
         </p>
+
+        <div className="showcase-demo-container" style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid var(--border-subtle)' }}>
+           <button 
+             onClick={() => { loginAsDemo(); navigate('/'); }}
+             className="btn btn-outline" 
+             style={{ width: '100%', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+           >
+             <Play size={18} fill="currentColor" />
+             Launch Showcase Mode (Demo)
+           </button>
+           <p className="text-muted" style={{ fontSize: '0.75rem', textAlign: 'center', marginTop: 12 }}>
+             Perfect for panel presentations. Uses pre-populated data.
+           </p>
+        </div>
       </div>
     </div>
   );

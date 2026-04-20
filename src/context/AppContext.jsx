@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { mockUsers, mockProjects, mockCommunities, currentUser } from '../data/mockData';
+import { mockUsers, mockProjects, mockCommunities } from '../data/mockData';
 import { auth } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getUserProfile } from '../services/db';
+import { getUserProfile, getProjects, getUsers } from '../services/db';
 
 const AppContext = createContext(null);
 
@@ -44,25 +44,24 @@ export function AppProvider({ children }) {
     
     return () => unsubscribe();
   }, []);
-  const [projects, setProjects] = useState([]);
-  const [communities, setCommunities] = useState([]);
-  const [users] = useState([]);
+  const [projects, setProjects] = useState(mockProjects);
+  const [communities, setCommunities] = useState(mockCommunities);
+  const [users, setUsers] = useState(mockUsers);
   const [following, setFollowing] = useState([]);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [likedProjects, setLikedProjects] = useState([]);
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    // Fetch global projects from Firebase on mount
-    import('../services/db').then(({ getProjects, getUsers }) => {
-      getProjects().then(fetchedProjects => {
-        setProjects(fetchedProjects);
-      }).catch(err => console.error("Error fetching projects", err));
-      
-      getUsers().then(fetchedUsers => {
-        setUsers(fetchedUsers);
-      }).catch(err => console.error("Error fetching users", err));
-    });
+    // Fetch from Firebase, but mock data is already pre-loaded so the demo
+    // is instantly functional even if Firestore is slow or empty.
+    getProjects().then(fetchedProjects => {
+      if (fetchedProjects.length > 0) setProjects(fetchedProjects);
+    }).catch(err => console.error("Error fetching projects", err));
+
+    getUsers().then(fetchedUsers => {
+      if (fetchedUsers.length > 0) setUsers(fetchedUsers);
+    }).catch(err => console.error("Error fetching users", err));
   }, []);
 
   const toggleFollow = (userId) => {
@@ -119,11 +118,33 @@ export function AppProvider({ children }) {
     });
   };
 
+  const loginAsDemo = () => {
+    // We use the first mock user as our "Showcase" identity
+    const demoUser = mockUsers[0];
+    setUser(demoUser);
+    
+    // Ensure we have some data in the session even if Firestore is empty
+    if (projects.length === 0) {
+      setProjects(mockProjects);
+    }
+    if (communities.length === 0) {
+      setCommunities(mockCommunities);
+    }
+    
+    // Pre-join some communities for the demo user
+    setJoinedCommunities(['c1', 'c2', 'c5']);
+    
+    // Add a welcome notification
+    setNotifications([
+      { id: 1, type: 'welcome', text: 'Welcome to SystemSpace Showcase! Feel free to explore the AI Resume and Communities.', read: false, time: 'Just now' }
+    ]);
+  };
+
   return (
     <AppContext.Provider value={{
       user, authLoading, projects, communities, users,
       following, joinedCommunities, likedProjects, notifications,
-      theme, toggleFollow, toggleJoinCommunity, toggleLike, addProject, addCommunity, markAllNotificationsRead, toggleTheme
+      theme, toggleFollow, toggleJoinCommunity, toggleLike, addProject, addCommunity, loginAsDemo, markAllNotificationsRead, toggleTheme
     }}>
       {children}
     </AppContext.Provider>

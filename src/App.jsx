@@ -7,6 +7,7 @@ import ProjectDetail from './pages/ProjectDetail';
 import Upload from './pages/Upload';
 import Profile from './pages/Profile';
 import Communities from './pages/Communities';
+import CommunityDetail from './pages/CommunityDetail';
 import Messages from './pages/Messages';
 import ResumeBuilder from './pages/ResumeBuilder';
 import Contributions from './pages/Contributions';
@@ -30,6 +31,7 @@ function App() {
             <Route path="/upload" element={<Upload />} />
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="/communities" element={<Communities />} />
+            <Route path="/community/:id" element={<CommunityDetail />} />
             <Route path="/contributions" element={<Contributions />} />
             <Route path="/connects" element={<Connects />} />
             <Route path="/messages" element={<Messages />} />

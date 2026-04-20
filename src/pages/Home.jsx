@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Search, Plus, Rocket, Users, MessageSquare, ArrowRight, Sparkles, Flame, Compass } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import ProjectCard from '../components/ProjectCard';
@@ -119,9 +120,9 @@ export default function Home() {
       {/* Floating Action Button */}
       <div className={`fab-container ${isFabOpen ? 'active' : ''}`}>
         <div className="fab-menu">
-          <a href="/upload" className="fab-item">
+          <Link to="/upload" className="fab-item">
             <Plus size={18} /> Create Project
-          </a>
+          </Link>
           <button className="fab-item">
             <Users size={18} /> Join Project
           </button>

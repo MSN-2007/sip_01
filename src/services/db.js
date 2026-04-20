@@ -32,6 +32,28 @@ export async function getCommunities() {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
+import { onSnapshot } from 'firebase/firestore';
+
+export function subscribeToCommunityMessages(communityId, callback) {
+  const q = query(
+    collection(db, 'communities', communityId, 'messages'),
+    orderBy('createdAt', 'asc')
+  );
+  
+  return onSnapshot(q, (snapshot) => {
+    const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(messages);
+  });
+}
+
+export async function sendCommunityMessage(communityId, messageData) {
+  const docRef = await addDoc(collection(db, 'communities', communityId, 'messages'), {
+    ...messageData,
+    createdAt: new Date().toISOString()
+  });
+  return { id: docRef.id, ...messageData };
+}
+
 // --- Users ---
 export async function getUserProfile(userId) {
   const docRef = doc(db, 'users', userId);

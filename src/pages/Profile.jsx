@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   ShieldCheck, 
@@ -33,19 +33,31 @@ export default function Profile() {
   useEffect(() => {
     const fetchUser = async () => {
       setLoading(true);
+      // If this is the currently logged-in user, use their context data directly
       if (currentUser && currentUser.id === id) {
         setProfileUser(currentUser);
         setLoading(false);
-      } else {
-        try {
-          const { getUserProfile } = await import('../services/db');
-          const doc = await getUserProfile(id);
+        return;
+      }
+      try {
+        const { getUserProfile } = await import('../services/db');
+        const doc = await getUserProfile(id);
+        if (doc) {
           setProfileUser(doc);
-        } catch (err) {
-          console.error("Failed to load profile", err);
-        } finally {
-          setLoading(false);
+        } else {
+          // Firestore returned nothing — fall back to mock data for demo
+          const { mockUsers } = await import('../data/mockData');
+          const mockUser = mockUsers.find(u => u.id === id);
+          setProfileUser(mockUser || null);
         }
+      } catch (err) {
+        console.error("Failed to load profile", err);
+        // Even on error, try mock data so the demo still works
+        const { mockUsers } = await import('../data/mockData');
+        const mockUser = mockUsers.find(u => u.id === id);
+        setProfileUser(mockUser || null);
+      } finally {
+        setLoading(false);
       }
     };
     fetchUser();

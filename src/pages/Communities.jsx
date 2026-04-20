@@ -121,8 +121,19 @@ export default function Communities() {
 }
 
 function CommunityCard({ community, joined, onToggle }) {
+  const navigate = useNavigate();
+  
+  const handleCardClick = () => {
+    if (joined && !community.isPremium) {
+      navigate(`/community/${community.id}`);
+    }
+  };
+
   return (
-    <div className={`community-card-new glass-card ${community.isPremium ? 'premium-community' : ''}`}>
+    <div 
+      className={`community-card-new glass-card ${community.isPremium ? 'premium-community' : ''} ${joined ? 'clickable' : ''}`}
+      onClick={handleCardClick}
+    >
       {community.isPremium && <div className="c-premium-badge">Premium</div>}
       
       <div className="c-card-header">

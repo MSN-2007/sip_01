@@ -18,7 +18,7 @@ const stageConfig = {
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { projects, users, likedProjects, toggleLike, following, toggleFollow, user } = useApp();
+  const { projects, likedProjects, toggleLike, following, toggleFollow, user } = useApp();
   const project = projects.find(p => p.id === id);
   const [showCollabModal, setShowCollabModal] = useState(false);
   const [collabMsg, setCollabMsg] = useState('');
@@ -40,8 +40,8 @@ export default function ProjectDetail() {
   const isFollowing = user ? following.includes(project.userId) : false;
   const isOwn = user && project.userId === user.id;
   const stage = stageConfig[project.stage] || stageConfig.Idea;
-  const sdgs = SDG_GOALS.filter(g => project.sdgTags?.includes(g.id));
-  const relatedProjects = projects.filter(p => p.id !== id && p.domainTags.some(d => project.domainTags.includes(d))).slice(0, 2);
+  const sdgs = SDG_GOALS.filter(g => project.sdgTags?.includes(g.id)) || [];
+  const relatedProjects = projects.filter(p => p.id !== id && (p.domainTags || []).some(d => (project.domainTags || []).includes(d))).slice(0, 2);
 
   const handleLikeClick = () => {
     if (!user) {
@@ -98,7 +98,7 @@ export default function ProjectDetail() {
                     <span className="stage-dot" style={{ background: stage.dot }} />
                     {project.stage}
                   </span>
-                  {project.domainTags.map(d => (
+                  {(project.domainTags || []).map(d => (
                     <span key={d} className="chip chip-domain">{d}</span>
                   ))}
                 </div>
@@ -123,7 +123,7 @@ export default function ProjectDetail() {
             <div className="glass-card pd-section">
               <h3 className="pd-section-title">⚡ Tech Stack</h3>
               <div className="pd-chips-row">
-                {project.techStack.map(t => (
+                {(project.techStack || []).map(t => (
                   <span key={t} className="chip chip-tech">{t}</span>
                 ))}
               </div>
@@ -133,7 +133,7 @@ export default function ProjectDetail() {
             <div className="glass-card pd-section">
               <h3 className="pd-section-title">📖 About This Project</h3>
               <div className="pd-long-desc">
-                {project.longDescription.split('\n\n').map((para, i) => (
+                {(project.longDescription || project.shortDescription || '').split('\n\n').map((para, i) => (
                   <p key={i}>{para}</p>
                 ))}
               </div>
@@ -158,17 +158,17 @@ export default function ProjectDetail() {
             <div className="glass-card pd-section">
               <h3 className="pd-section-title">🧪 Proof of Work</h3>
               <div className="pd-proof">
-                {project.proofOfWork.videoUrl && (
+                {project.proofOfWork?.videoUrl && (
                   <a href={project.proofOfWork.videoUrl} target="_blank" rel="noreferrer" className="proof-item">
                     <Globe size={16} /> Watch Demo Video <ExternalLink size={12} />
                   </a>
                 )}
-                {project.proofOfWork.patentNumber && (
+                {project.proofOfWork?.patentNumber && (
                   <div className="proof-item">
                     <FileText size={16} /> Patent: {project.proofOfWork.patentNumber}
                   </div>
                 )}
-                {!project.proofOfWork.videoUrl && !project.proofOfWork.patentNumber && (
+                {!project.proofOfWork?.videoUrl && !project.proofOfWork?.patentNumber && (
                   <p className="pd-no-proof">No proof of work links added yet.</p>
                 )}
               </div>
@@ -196,11 +196,11 @@ export default function ProjectDetail() {
             <div className="sidebar-card">
               <p className="pd-sidebar-label">Posted by</p>
               <Link to={`/profile/${project.userId}`} className="pd-builder">
-                <img src={project.user.avatar} alt={project.user.name} className="avatar" style={{ width: 48, height: 48 }} />
+                <img src={project.user?.avatar || 'https://ui-avatars.com/api/?name=User'} alt={project.user?.name || 'User'} className="avatar" style={{ width: 48, height: 48 }} />
                 <div>
-                  <p className="pdb-name">{project.user.name}</p>
-                  <p className="pdb-tag">{project.user.tagline}</p>
-                  <p className="pdb-loc">📍 {project.user.location}</p>
+                  <p className="pdb-name">{project.user?.name || 'Anonymous Builder'}</p>
+                  <p className="pdb-tag">{project.user?.tagline || 'Community Member'}</p>
+                  <p className="pdb-loc">📍 {project.user?.location || 'Global'}</p>
                 </div>
               </Link>
               <div className="pd-builder-stats">

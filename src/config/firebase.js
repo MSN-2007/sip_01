@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY?.trim(),
@@ -12,8 +13,6 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID?.trim(),
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID?.trim()
 };
-
-import { getAnalytics } from "firebase/analytics";
 
 // Initialize Firebase only if the config is provided (prevents crashes before .env is set)
 let app, auth, db, storage, analytics;

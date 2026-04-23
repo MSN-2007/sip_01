@@ -63,7 +63,8 @@ export default function Login() {
       if (err.code === 'auth/popup-closed-by-user') {
         friendlyMessage = 'Login popup was closed before completion.';
       } else if (err.code === 'auth/unauthorized-domain') {
-        friendlyMessage = 'This domain is not authorized for Firebase Auth. Please check Firebase Console.';
+        setError('auth/unauthorized-domain');
+        return;
       } else if (err.code === 'auth/operation-not-allowed') {
         friendlyMessage = `Social login provider not enabled in Firebase Console.`;
       } else {

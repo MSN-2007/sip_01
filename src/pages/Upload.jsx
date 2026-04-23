@@ -15,7 +15,9 @@ import {
   Cpu, 
   Video, 
   Users, 
-  Search 
+  Search,
+  Github,
+  Linkedin
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { TECH_STACKS, DOMAINS } from '../data/mockData';
@@ -345,7 +347,7 @@ export default function Upload() {
                 <div className="form-field-group">
                   <label className="field-label-new">GitHub Repository</label>
                   <div className="auth-input-wrapper">
-                    <X className="auth-input-icon" size={18} />
+                    <Github className="auth-input-icon" size={18} />
                     <input className="field-input-new" style={{ paddingLeft: 40 }} placeholder="https://github.com/..." value={form.links.github} onChange={e => set('links', { ...form.links, github: e.target.value })} />
                   </div>
                 </div>
@@ -353,7 +355,7 @@ export default function Upload() {
                 <div className="form-field-group">
                   <label className="field-label-new">LinkedIn Post</label>
                   <div className="auth-input-wrapper">
-                    <Users className="auth-input-icon" size={18} />
+                    <Linkedin className="auth-input-icon" size={18} />
                     <input className="field-input-new" style={{ paddingLeft: 40 }} placeholder="https://linkedin.com/..." value={form.links.linkedin} onChange={e => set('links', { ...form.links, linkedin: e.target.value })} />
                   </div>
                 </div>

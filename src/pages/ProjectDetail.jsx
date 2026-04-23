@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Heart, Eye, Users, Share2, ExternalLink, Zap,
-  Globe, FileText, CheckCircle, ChevronRight, MessageSquare
+  Globe, FileText, CheckCircle, ChevronRight, MessageSquare, Video, Github
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { SDG_GOALS } from '../data/mockData';
@@ -165,7 +165,7 @@ export default function ProjectDetail() {
                 )}
                 {project.proofOfWork?.links?.github && (
                   <a href={project.proofOfWork.links.github} target="_blank" rel="noreferrer" className="proof-item">
-                    <X size={16} /> GitHub Repository <ExternalLink size={12} />
+                    <Github size={16} /> GitHub Repository <ExternalLink size={12} />
                   </a>
                 )}
                 {project.proofOfWork?.links?.linkedin && (

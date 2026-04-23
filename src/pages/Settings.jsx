@@ -1,17 +1,34 @@
 import { useState } from 'react';
-import { User, Bell, Shield, Save, CheckCircle2, Database } from 'lucide-react';
+import { 
+  User, 
+  Bell, 
+  Shield, 
+  Save, 
+  CheckCircle2, 
+  Database, 
+  Moon, 
+  Sun, 
+  Lock, 
+  Mail,
+  Palette,
+  Layout
+} from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { seedDatabase } from '../services/db';
-import './Profile.css';
+import './Settings.css';
 
 export default function Settings() {
   const { theme, toggleTheme, user, authLoading } = useApp();
+  const [activeTab, setActiveTab] = useState('profile');
   const [saveStatus, setSaveStatus] = useState(null);
   const [isSeeding, setIsSeeding] = useState(false);
 
   const handleSave = () => {
-    setSaveStatus('saved');
-    setTimeout(() => setSaveStatus(null), 3000);
+    setSaveStatus('saving');
+    setTimeout(() => {
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus(null), 3000);
+    }, 800);
   };
 
   const handleSeed = async () => {
@@ -26,137 +43,207 @@ export default function Settings() {
   };
 
   if (authLoading) {
-    return <div className="home-page-new" style={{ padding: 40, textAlign: 'center' }}>Loading Settings...</div>;
+    return <div className="settings-page" style={{ textAlign: 'center', paddingTop: 100 }}>Loading Settings...</div>;
   }
 
   if (!user) {
     return (
-      <div className="home-page-new" style={{ padding: 40, textAlign: 'center' }}>
-        <h2>Not Logged In</h2>
-        <p className="text-muted">You must log in to view settings.</p>
-        <a href="/login" className="btn btn-primary" style={{ marginTop: 12 }}>Log In</a>
+      <div className="settings-page" style={{ textAlign: 'center', paddingTop: 100 }}>
+        <h2>Access Denied</h2>
+        <p className="text-muted">Please log in to manage your account settings.</p>
+        <button onClick={() => window.location.href = '/login'} className="btn btn-primary" style={{ marginTop: 24 }}>Log In</button>
       </div>
     );
   }
 
+  const tabs = [
+    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'account', label: 'Account', icon: Shield },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'appearance', label: 'Appearance', icon: Palette },
+  ];
+
   return (
-    <div className="home-page-new">
-       <header className="home-top-bar" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 16 }}>
-          <h1 className="section-title-new" style={{ fontSize: '2.5rem' }}>Settings</h1>
-          <p className="text-muted">Manage your profile, preferences, and account security.</p>
-       </header>
+    <div className="settings-page">
+      <header className="settings-header">
+        <h1 className="gradient-text" style={{ fontSize: '2.5rem', marginBottom: 8 }}>Account Settings</h1>
+        <p className="text-muted">Customize your developer profile and preferences.</p>
+      </header>
 
-       <div style={{ maxWidth: 800, marginTop: 40 }}>
+      <div className="settings-layout">
+        {/* Sidebar Nav */}
+        <aside className="settings-sidebar">
+          {tabs.map(tab => (
+            <button 
+              key={tab.id}
+              className={`settings-tab ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <tab.icon size={18} />
+              {tab.label}
+            </button>
+          ))}
           
-          {/* Profile Section */}
-          <section className="kanban-card glass-card" style={{ padding: 32, marginBottom: 32 }}>
-             <div className="section-header-new" style={{ marginBottom: 24 }}>
-                <h2 className="section-title-new" style={{ fontSize: '1.25rem' }}><User size={20} style={{ color: 'var(--accent-primary)', marginRight: 12 }} /> Profile Settings</h2>
-             </div>
-             
-             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                <div className="settings-grid-new">
-                   <div className="form-group">
-                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Display Name</label>
-                      <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue={user.name || ''} />
-                   </div>
-                   <div className="form-group">
-                      <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Username</label>
-                      <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue={`@${(user.name || 'user').replace(/\s+/g, '').toLowerCase()}`} />
-                   </div>
-                </div>
-                <div className="form-group">
-                   <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Professional Tagline</label>
-                   <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue={user.tagline || ''} />
-                </div>
-             </div>
-          </section>
-
-          {/* Account Section & Preferences */}
-          <section className="kanban-card glass-card" style={{ padding: 32, marginBottom: 32 }}>
-             <div className="section-header-new" style={{ marginBottom: 24 }}>
-                <h2 className="section-title-new" style={{ fontSize: '1.25rem' }}><Shield size={20} style={{ color: '#10b981', marginRight: 12 }} /> Preferences & Security</h2>
-             </div>
-             
-             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-                {/* Theme Toggle */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 16, borderBottom: '1px solid var(--border-subtle)' }}>
-                   <div>
-                      <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>Appearance</p>
-                      <p className="text-muted" style={{ fontSize: '0.8rem' }}>Toggle between Bright Mode and Dark Mode</p>
-                   </div>
-                   <button 
-                     onClick={toggleTheme}
-                     className="toggle-switch" 
-                     style={{ 
-                       width: 44, height: 24, 
-                       background: theme === 'dark' ? 'var(--accent-primary)' : 'var(--border-subtle)', 
-                       borderRadius: 12, position: 'relative', cursor: 'pointer', border: 'none'
-                     }}>
-                      <div style={{ 
-                        position: 'absolute', 
-                        right: theme === 'dark' ? 2 : 'auto', 
-                        left: theme === 'dark' ? 'auto' : 2, 
-                        top: 2, width: 20, height: 20, 
-                        background: 'white', borderRadius: '50%',
-                        transition: 'all 0.3s'
-                      }} />
-                   </button>
-                </div>
-
-                {/* Password / Email */}
-                <div className="form-group">
-                   <label style={{ display: 'block', fontSize: '0.85rem', marginBottom: 8, color: 'var(--text-muted)' }}>Email Address</label>
-                   <input className="search-input-new" style={{ padding: '12px 16px' }} defaultValue={user.email || ''} readOnly />
-                </div>
-                <button className="btn btn-outline btn-sm" style={{ width: 'fit-content' }}>Change Password</button>
-             </div>
-          </section>
-
-          {/* Notifications */}
-          <section className="kanban-card glass-card" style={{ padding: 32, marginBottom: 48 }}>
-             <div className="section-header-new" style={{ marginBottom: 24 }}>
-                <h2 className="section-title-new" style={{ fontSize: '1.25rem' }}><Bell size={20} style={{ color: '#fbbf24', marginRight: 12 }} /> Notifications</h2>
-             </div>
-             
-             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {[
-                   { label: 'Project Collaboration Requests', desc: 'Get notified when someone wants to join your project.' },
-                   { label: 'Platform Announcements', desc: 'Stay updated with new features and community news.' },
-                   { label: 'Messages', desc: 'Direct message notifications from collaborators.' }
-                ].map((item, i) => (
-                   <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 0', borderBottom: i < 2 ? '1px solid var(--border-subtle)' : 'none' }}>
-                      <div>
-                         <p style={{ fontWeight: 600, fontSize: '0.95rem' }}>{item.label}</p>
-                         <p className="text-muted" style={{ fontSize: '0.8rem' }}>{item.desc}</p>
-                      </div>
-                      <div className="toggle-switch" style={{ width: 44, height: 24, background: 'var(--accent-primary)', borderRadius: 12, position: 'relative', cursor: 'pointer' }}>
-                         <div style={{ position: 'absolute', right: 2, top: 2, width: 20, height: 20, background: 'white', borderRadius: '50%' }} />
-                      </div>
-                   </div>
-                ))}
-             </div>
-          </section>
-
-          {/* Action Bar */}
-          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-             <button className="btn btn-primary" onClick={handleSave} style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 160 }}>
-                {saveStatus === 'saved' ? <CheckCircle2 size={18} /> : <Save size={18} />}
-                {saveStatus === 'saved' ? 'Changes Saved' : 'Save Changes'}
-             </button>
+          <div style={{ marginTop: 'auto', paddingTop: 20 }}>
              <button 
-                className="btn btn-outline" 
+                className="btn btn-ghost btn-sm" 
                 onClick={handleSeed}
                 disabled={isSeeding}
-                style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                style={{ width: '100%', justifyContent: 'flex-start', fontSize: '0.75rem', opacity: 0.6 }}
              >
-                <Database size={18} />
-                {isSeeding ? 'Pushing Data...' : '[Admin] Seed Database'}
+                <Database size={14} /> {isSeeding ? 'Seeding...' : 'Seed Data'}
              </button>
-             {saveStatus === 'saved' && <span style={{ color: '#10b981', fontSize: '0.9rem', fontWeight: 600 }}>Profile updated successfully!</span>}
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main className="settings-content">
+          
+          {activeTab === 'profile' && (
+            <div className="settings-section-card glass-card">
+              <div className="settings-section-header">
+                <h2 className="settings-section-title">Public Profile</h2>
+                <p className="settings-section-desc">Manage how you appear to the builder community.</p>
+              </div>
+
+              <div className="settings-input-group">
+                <div className="form-group">
+                  <label className="settings-label">Display Name</label>
+                  <input className="form-input" defaultValue={user.name} />
+                </div>
+                <div className="form-group">
+                  <label className="settings-label">Username</label>
+                  <div style={{ position: 'relative' }}>
+                    <input className="form-input" style={{ paddingLeft: 36 }} defaultValue={user.name?.toLowerCase().replace(/\s/g, '')} />
+                    <span style={{ position: 'absolute', left: 14, top: 12, color: 'var(--text-muted)' }}>@</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: 24 }}>
+                <label className="settings-label">Professional Tagline</label>
+                <input className="form-input" placeholder="e.g. IoT Architect | Fullstack Developer" defaultValue={user.tagline} />
+              </div>
+
+              <div className="form-group">
+                <label className="settings-label">Bio</label>
+                <textarea className="form-input" rows={4} placeholder="Tell the world about your building journey..." defaultValue={user.bio} />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'account' && (
+            <div className="settings-section-card glass-card">
+              <div className="settings-section-header">
+                <h2 className="settings-section-title">Account Security</h2>
+                <p className="settings-section-desc">Manage your authentication methods and security.</p>
+              </div>
+
+              <div className="settings-row">
+                <div className="settings-info">
+                  <span className="settings-label">Email Address</span>
+                  <p className="settings-section-desc">{user.email}</p>
+                </div>
+                <div className="chip chip-tech" style={{ borderRadius: 6 }}>Verified</div>
+              </div>
+
+              <div className="settings-row">
+                <div className="settings-info">
+                  <span className="settings-label">Password</span>
+                  <p className="settings-section-desc">Last changed 3 months ago</p>
+                </div>
+                <button className="btn btn-ghost btn-sm">Update</button>
+              </div>
+
+              <div className="settings-row">
+                <div className="settings-info">
+                  <span className="settings-label">Two-Factor Authentication</span>
+                  <p className="settings-section-desc">Add an extra layer of security to your account.</p>
+                </div>
+                <button className="btn btn-secondary btn-sm">Enable</button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'notifications' && (
+            <div className="settings-section-card glass-card">
+              <div className="settings-section-header">
+                <h2 className="settings-section-title">Notification Preferences</h2>
+                <p className="settings-section-desc">Choose what updates you want to receive.</p>
+              </div>
+
+              {[
+                { id: 'collab', label: 'Collaboration Requests', desc: 'When someone wants to join your project team.' },
+                { id: 'msgs', label: 'Direct Messages', desc: 'New messages in your inbox or group chats.' },
+                { id: 'updates', label: 'Product Updates', desc: 'Updates about new SIP_01 features and news.' },
+                { id: 'mentions', label: 'Mentions', desc: 'When someone tags you in a community.' }
+              ].map((item) => (
+                <div key={item.id} className="settings-row">
+                  <div className="settings-info">
+                    <span className="settings-label">{item.label}</span>
+                    <p className="settings-section-desc">{item.desc}</p>
+                  </div>
+                  <div className="toggle-switch-new" style={{ 
+                    width: 44, height: 24, background: 'var(--accent-primary)', 
+                    borderRadius: 22, position: 'relative', cursor: 'pointer' 
+                  }}>
+                    <div style={{ position: 'absolute', right: 2, top: 2, width: 20, height: 20, background: 'white', borderRadius: '50%' }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeTab === 'appearance' && (
+            <div className="settings-section-card glass-card">
+              <div className="settings-section-header">
+                <h2 className="settings-section-title">Interface Themes</h2>
+                <p className="settings-section-desc">Choose a look that suits your development style.</p>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
+                <div 
+                  className={`theme-card ${theme !== 'light' ? 'active' : ''}`}
+                  onClick={() => theme === 'light' && toggleTheme()}
+                  style={{ 
+                    padding: 20, borderRadius: 12, border: '2px solid', 
+                    borderColor: theme !== 'light' ? 'var(--accent-primary)' : 'var(--border-subtle)',
+                    cursor: 'pointer', background: '#09090b', color: 'white'
+                  }}
+                >
+                  <Moon size={24} style={{ marginBottom: 12 }} />
+                  <p style={{ fontWeight: 700 }}>Midnight Dark</p>
+                  <p style={{ fontSize: '0.75rem', opacity: 0.7 }}>Default premium dark mode.</p>
+                </div>
+
+                <div 
+                  className={`theme-card ${theme === 'light' ? 'active' : ''}`}
+                  onClick={() => theme !== 'light' && toggleTheme()}
+                  style={{ 
+                    padding: 20, borderRadius: 12, border: '2px solid', 
+                    borderColor: theme === 'light' ? 'var(--accent-primary)' : 'var(--border-subtle)',
+                    cursor: 'pointer', background: '#fbfbfd', color: '#18181b'
+                  }}
+                >
+                  <Sun size={24} style={{ marginBottom: 12 }} />
+                  <p style={{ fontWeight: 700 }}>Pristine Light</p>
+                  <p style={{ fontSize: '0.75rem', opacity: 0.7 }}>High contrast light theme.</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="settings-footer">
+             {saveStatus === 'saved' && <span style={{ color: 'var(--accent-secondary)', fontSize: '0.875rem', alignSelf: 'center', fontWeight: 600 }}>Preferences updated!</span>}
+             <button className="btn btn-ghost" onClick={() => navigate(-1)}>Cancel</button>
+             <button className="btn btn-primary" onClick={handleSave} disabled={saveStatus === 'saving'}>
+                {saveStatus === 'saving' ? 'Saving...' : (saveStatus === 'saved' ? 'Saved' : 'Save Changes')}
+                {saveStatus !== 'saving' && <Save size={16} />}
+             </button>
           </div>
 
-       </div>
+        </main>
+      </div>
     </div>
   );
 }

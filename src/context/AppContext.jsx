@@ -71,9 +71,17 @@ export function AppProvider({ children }) {
   };
 
   const toggleJoinCommunity = (communityId) => {
-    setJoinedCommunities(prev =>
-      prev.includes(communityId) ? prev.filter(id => id !== communityId) : [...prev, communityId]
-    );
+    setJoinedCommunities(prev => {
+      const isJoined = prev.includes(communityId);
+      const next = isJoined ? prev.filter(id => id !== communityId) : [...prev, communityId];
+      
+      // Persistence placeholder - would normally call updateDoc(doc(db, 'users', user.id), ...)
+      if (user) {
+        console.log(`User ${user.id} ${isJoined ? 'left' : 'joined'} community ${communityId}`);
+      }
+      
+      return next;
+    });
   };
 
   const toggleLike = (projectId) => {
@@ -91,8 +99,9 @@ export function AppProvider({ children }) {
     });
   };
 
-  const addProject = (project) => {
+  const addProject = async (project) => {
     setProjects(prev => [project, ...prev]);
+    // Persistence would happen in Upload page service call
   };
 
   const markAllNotificationsRead = () => {
@@ -102,6 +111,9 @@ export function AppProvider({ children }) {
   const addCommunity = (community) => {
     setCommunities(prev => [community, ...prev]);
     setJoinedCommunities(prev => [...prev, community.id]);
+    
+    // In a real app, we'd also call addDoc(collection(db, 'communities'), ...) here
+    console.log("Added new community:", community.name);
   };
 
   const [theme, setTheme] = useState('dark');
@@ -124,12 +136,8 @@ export function AppProvider({ children }) {
     setUser(demoUser);
     
     // Ensure we have some data in the session even if Firestore is empty
-    if (projects.length === 0) {
-      setProjects(mockProjects);
-    }
-    if (communities.length === 0) {
-      setCommunities(mockCommunities);
-    }
+    setProjects(mockProjects);
+    setCommunities(mockCommunities);
     
     // Pre-join some communities for the demo user
     setJoinedCommunities(['c1', 'c2', 'c5']);
@@ -138,6 +146,8 @@ export function AppProvider({ children }) {
     setNotifications([
       { id: 1, type: 'welcome', text: 'Welcome to SystemSpace Showcase! Feel free to explore the AI Resume and Communities.', read: false, time: 'Just now' }
     ]);
+    
+    console.log("Logged in as Demo User.");
   };
 
   return (

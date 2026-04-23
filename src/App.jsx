@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import MainLayout from './components/MainLayout';
+import ProtectedRoute from './components/ProtectedRoute'; // New
 import Home from './pages/Home';
 import Explore from './pages/Explore';
 import ProjectDetail from './pages/ProjectDetail';
@@ -25,19 +26,24 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            
+            {/* Public Routes */}
             <Route path="/" element={<Home />} />
             <Route path="/explore" element={<Explore />} />
             <Route path="/project/:id" element={<ProjectDetail />} />
-            <Route path="/upload" element={<Upload />} />
             <Route path="/profile/:id" element={<Profile />} />
             <Route path="/communities" element={<Communities />} />
-            <Route path="/community/:id" element={<CommunityDetail />} />
-            <Route path="/contributions" element={<Contributions />} />
-            <Route path="/connects" element={<Connects />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/resume" element={<ResumeBuilder />} />
-            <Route path="/settings" element={<Settings />} />
             <Route path="/terms" element={<Terms />} />
+
+            {/* Protected Routes */}
+            <Route path="/upload" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
+            <Route path="/community/:id" element={<ProtectedRoute><CommunityDetail /></ProtectedRoute>} />
+            <Route path="/contributions" element={<ProtectedRoute><Contributions /></ProtectedRoute>} />
+            <Route path="/connects" element={<ProtectedRoute><Connects /></ProtectedRoute>} />
+            <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+            <Route path="/resume" element={<ProtectedRoute><ResumeBuilder /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+
             {/* Fallback */}
             <Route path="*" element={<Home />} />
           </Routes>

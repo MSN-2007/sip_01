@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Projects: Anyone can read, only signed in users can create, only owners can edit
+    match /projects/{projectId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isOwner(resource.data.userId);
+    }
+    
+    // Communities: Anyone can read, only signed in users can join/leave
+    match /communities/{communityId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      
+      // Subcollection for messages
+      match /messages/{messageId} {
+        allow read: if isSignedIn(); // Must be signed in to see community chats
+        allow create: if isSignedIn();
+      }
+    }
+    
+    // Users: Profiles are public, but only owners can edit
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+    
+    // Connections: Only participants can read/write
+    match /connections/{connectionId} {
+      allow read, write: if isSignedIn() && (
+        request.auth.uid == resource.data.from || 
+        request.auth.uid == resource.data.to ||
+        request.auth.uid == request.resource.data.from ||
+        request.auth.uid == request.resource.data.to
+      );
+    }
+  }
+}

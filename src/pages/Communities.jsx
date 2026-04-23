@@ -122,11 +122,21 @@ export default function Communities() {
 
 function CommunityCard({ community, joined, onToggle }) {
   const navigate = useNavigate();
+  const { user } = useApp();
   
   const handleCardClick = () => {
     if (joined && !community.isPremium) {
       navigate(`/community/${community.id}`);
     }
+  };
+
+  const handleToggleJoin = (e) => {
+    e.stopPropagation();
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    onToggle();
   };
 
   return (
@@ -158,7 +168,7 @@ function CommunityCard({ community, joined, onToggle }) {
          ) : (
            <button 
              className={`btn btn-sm ${joined ? 'btn-ghost' : 'btn-primary'}`}
-             onClick={onToggle}
+             onClick={handleToggleJoin}
              style={{ padding: '6px 14px', minWidth: 80 }}
            >
              {joined ? 'Joined ✓' : 'Join'}

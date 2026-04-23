@@ -68,6 +68,21 @@ export default function Profile() {
     return projects.filter(p => p.userId === profileUser.id);
   }, [projects, profileUser]);
 
+  const userActivity = useMemo(() => {
+    if (!userProjects.length) return [];
+    
+    // Map project creation dates to counts
+    const counts = {};
+    userProjects.forEach(p => {
+      const date = p.createdAt?.split('T')[0] || p.createdAt;
+      if (date) {
+        counts[date] = (counts[date] || 0) + 1;
+      }
+    });
+
+    return Object.entries(counts).map(([date, count]) => ({ date, count }));
+  }, [userProjects]);
+
   const groupedProjects = useMemo(() => {
     return {
       Idea: userProjects.filter(p => p.stage === 'Idea'),
@@ -78,8 +93,8 @@ export default function Profile() {
 
   const stats = {
     total: userProjects.length,
-    contributions: 14, // Mock
-    communities: 6, // Mock
+    contributions: userProjects.reduce((acc, p) => acc + (p.contributors || 0), 0),
+    communities: profileUser?.joinedCommunities?.length || 0,
   };
 
   if (loading) {
@@ -151,7 +166,7 @@ export default function Profile() {
       <div className="profile-content-new">
         
         {/* Activity Heatmap */}
-        <ActivityHeatmap data={MOCK_ACTIVITY} />
+        <ActivityHeatmap data={userActivity} />
 
         {/* Project Board (Kanban) */}
         <section className="kanban-section">

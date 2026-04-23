@@ -4,14 +4,37 @@ import './ActivityHeatmap.css';
 export default function ActivityHeatmap({ data = [] }) {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   
+  // Generate 365 days of data and overlay user data
+  const fullYearData = useMemo(() => {
+    const today = new Date();
+    const result = [];
+    
+    // Create map of user data for quick lookup
+    const dataMap = {};
+    data.forEach(item => {
+      dataMap[item.date] = item.count;
+    });
+
+    for (let i = 364; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      result.push({
+        date: dateStr,
+        count: dataMap[dateStr] || 0
+      });
+    }
+    return result;
+  }, [data]);
+
   // Group logic (simplified for visualization)
   const columns = useMemo(() => {
     const cols = [];
-    for (let i = 0; i < data.length; i += 7) {
-      cols.push(data.slice(i, i + 7));
+    for (let i = 0; i < fullYearData.length; i += 7) {
+      cols.push(fullYearData.slice(i, i + 7));
     }
     return cols;
-  }, [data]);
+  }, [fullYearData]);
 
   const getColorClass = (count) => {
     if (count === 0) return 'level-0';

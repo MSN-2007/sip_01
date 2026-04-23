@@ -26,16 +26,23 @@ export default function Home() {
     }
 
     // Recommendation logic: Simple match on user's skills/domain
-    const recommended = base.filter(p => 
-      user?.tagline && (
+    let recommended = [];
+    if (user?.tagline) {
+      recommended = base.filter(p => 
         p.domainTags?.some(d => user.tagline.includes(d)) || 
         p.techStack?.some(t => user.tagline.includes(t))
-      )
-    ).slice(0, 3);
+      ).slice(0, 3);
+    }
+
+    // Fallback if no specific recommendations or not logged in
+    if (recommended.length === 0) {
+      recommended = base.filter(p => p.featured).slice(0, 3);
+      if (recommended.length === 0) recommended = base.slice(0, 3);
+    }
 
     const trending = base
-      .filter(p => p.views > 1000)
-      .sort((a, b) => b.views - a.views)
+      .filter(p => p.views > 1000 || p.likes > 100)
+      .sort((a, b) => (b.views + b.likes) - (a.views + a.likes))
       .slice(0, 3);
 
     const explore = base.filter(p => !recommended.includes(p) && !trending.includes(p)).slice(0, 4);
@@ -75,9 +82,9 @@ export default function Home() {
         <div className="section-header-new">
           <h2 className="section-title-new">
             <Sparkles size={24} style={{ color: 'var(--accent-primary)', marginRight: 8 }} /> 
-            Recommended for You
+            {user ? 'Recommended for You' : 'Featured Projects'}
           </h2>
-          <a href="/explore" className="section-view-all">View all <ArrowRight size={16} /></a>
+          <Link to="/explore" className="section-view-all">View all <ArrowRight size={16} /></Link>
         </div>
         <div className="horizontal-grid">
           {personalizedFeed.recommended.map(p => <ProjectCard key={p.id} project={p} />)}
@@ -96,7 +103,7 @@ export default function Home() {
             <Flame size={24} style={{ color: 'var(--accent-orange)', marginRight: 8 }} /> 
             Trending in {activeDomain === 'All' ? 'Your Network' : activeDomain}
           </h2>
-          <a href="/explore" className="section-view-all">See trends <ArrowRight size={16} /></a>
+          <Link to="/explore" className="section-view-all">See trends <ArrowRight size={16} /></Link>
         </div>
         <div className="horizontal-grid">
           {personalizedFeed.trending.map(p => <ProjectCard key={p.id} project={p} />)}
@@ -110,7 +117,7 @@ export default function Home() {
             <Compass size={24} style={{ color: 'var(--accent-secondary)', marginRight: 8 }} /> 
             Explore New Domains
           </h2>
-          <a href="/explore" className="section-view-all">Discover <ArrowRight size={16} /></a>
+          <Link to="/explore" className="section-view-all">Discover <ArrowRight size={16} /></Link>
         </div>
         <div className="horizontal-grid">
           {personalizedFeed.explore.map(p => <ProjectCard key={p.id} project={p} />)}
@@ -123,10 +130,10 @@ export default function Home() {
           <Link to="/upload" className="fab-item">
             <Plus size={18} /> Create Project
           </Link>
-          <button className="fab-item">
-            <Users size={18} /> Join Project
+          <button className="fab-item" onClick={() => navigate('/communities')}>
+            <Users size={18} /> Join Community
           </button>
-          <button className="fab-item">
+          <button className="fab-item" onClick={() => navigate('/explore')}>
             <MessageSquare size={18} /> Find Collaborators
           </button>
         </div>

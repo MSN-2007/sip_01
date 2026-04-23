@@ -88,7 +88,16 @@ export default function Login() {
           <p className="text-muted">Sign in to continue building your future.</p>
         </div>
 
-        {error && <div className="auth-error">{error}</div>}
+        {error && (
+          <div className={`auth-error ${error.includes('authorized') ? 'auth-error-special' : ''}`}>
+            {error}
+            {error.includes('authorized') && (
+              <p style={{ fontSize: '0.75rem', marginTop: 8, color: '#ff8a8a', fontWeight: 500 }}>
+                TIP: Log in to Firebase Console and add "localhost" to your Authorized Domains list.
+              </p>
+            )}
+          </div>
+        )}
         
         <div className="social-login-group">
           <button 
@@ -152,17 +161,18 @@ export default function Login() {
           Don't have an account? <Link to="/signup">Create one</Link>
         </p>
 
-        <div className="showcase-demo-container" style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid var(--border-subtle)' }}>
+        <div className="showcase-demo-container" style={{ marginTop: 32, paddingTop: 24, borderTop: '1px solid var(--border-subtle)', background: 'rgba(56, 189, 248, 0.05)', borderRadius: 12, padding: 16 }}>
+           <h4 style={{ fontSize: '0.875rem', marginBottom: 12, textAlign: 'center', color: 'var(--accent-primary)' }}>Want a quick tour?</h4>
            <button 
              onClick={() => { loginAsDemo(); navigate('/'); }}
-             className="btn btn-outline" 
-             style={{ width: '100%', borderColor: 'var(--accent-primary)', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
+             className="btn btn-primary" 
+             style={{ width: '100%', background: 'var(--accent-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 8 }}
            >
              <Play size={18} fill="currentColor" />
              Launch Showcase Mode (Demo)
            </button>
            <p className="text-muted" style={{ fontSize: '0.75rem', textAlign: 'center', marginTop: 12 }}>
-             Perfect for panel presentations. Uses pre-populated data.
+             Perfect for panel presentations. Uses high-quality pre-populated data.
            </p>
         </div>
       </div>

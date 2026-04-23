@@ -83,19 +83,30 @@ export default function Login() {
           <div className="nav-logo" style={{ marginBottom: 20 }}>
             <Layers className="logo-icon" size={28} />
             <span className="logo-text">System<span className="text-gradient">Space</span></span>
+            {error === 'auth/unauthorized-domain' && (
+              <div className="auth-error-box glass-card" style={{ marginBottom: 24, border: '1px solid #f43f5e', background: 'rgba(244, 63, 94, 0.1)' }}>
+                <p style={{ color: '#f43f5e', fontSize: '0.85rem', textAlign: 'center', fontWeight: 600 }}>
+                  This domain is not authorized for Firebase Auth.<br/>
+                  Please check Firebase Console.
+                </p>
+                <div style={{ marginTop: 12, padding: 8, background: 'rgba(0,0,0,0.2)', borderRadius: 8 }}>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center' }}>
+                    <strong style={{ color: 'var(--text-primary)' }}>TIP:</strong> Log in to Firebase Console &gt; Auth &gt; Settings &gt; Authorized Domains and add:
+                    <code style={{ display: 'block', margin: '8px 0', padding: '4px', background: '#000', color: 'var(--accent-secondary)' }}>
+                      {window.location.hostname}
+                    </code>
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
           <h2>Welcome Back</h2>
           <p className="text-muted">Sign in to continue building your future.</p>
         </div>
 
-        {error && (
-          <div className={`auth-error ${error.includes('authorized') ? 'auth-error-special' : ''}`}>
+        {error && error !== 'auth/unauthorized-domain' && (
+          <div className="auth-error">
             {error}
-            {error.includes('authorized') && (
-              <p style={{ fontSize: '0.75rem', marginTop: 8, color: '#ff8a8a', fontWeight: 500 }}>
-                TIP: Log in to Firebase Console and add "localhost" to your Authorized Domains list.
-              </p>
-            )}
           </div>
         )}
         

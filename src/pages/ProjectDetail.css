@@ -74,21 +74,87 @@
 
 /* Sidebar */
 /* Sidebar will use the global home-right-sidebar classes now */
+/* Builder Card */
 .pd-sidebar-label {
-  font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 8px;
+  font-size: 0.75rem; 
+  font-weight: 700; 
+  text-transform: uppercase;
+  letter-spacing: 0.05em; 
+  color: var(--text-muted); 
+  margin-bottom: 12px;
 }
-.pd-builder-card { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
-.pd-builder { display: flex; gap: 12px; text-decoration: none; color: inherit; }
-.pdb-name { font-weight: 700; font-size: 0.9rem; }
-.pdb-tag { font-size: 0.75rem; color: var(--text-muted); margin: 2px 0; }
-.pdb-loc { font-size: 0.72rem; color: var(--text-muted); }
-.pd-builder-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; text-align: center; border-top: 1px solid var(--border-subtle); padding-top: 12px; }
-.pdb-stat { display: flex; flex-direction: column; gap: 2px; }
-.pd-builder-actions { display: flex; gap: 8px; }
 
-.pd-cta-card { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-.pd-cta-desc { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.5; }
+.pd-builder-card { padding: 24px; }
+.pd-builder { 
+  display: flex; 
+  gap: 14px; 
+  text-decoration: none; 
+  color: inherit;
+  margin-bottom: 20px;
+}
+
+.pdb-info { display: flex; flex-direction: column; gap: 2px; }
+.pdb-name { font-weight: 700; font-size: 1rem; color: var(--text-primary); }
+.pdb-tag { font-size: 0.8rem; color: var(--text-secondary); }
+.pdb-loc { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+.pd-builder-stats-box {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 16px 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 20px;
+}
+
+.pdb-stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.pdb-stat-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.pdb-stat-unit {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.pd-builder-actions-group {
+  display: flex;
+  gap: 10px;
+}
+
+/* Collaboration CTA Card */
+.pd-cta-card { padding: 24px; }
+.pd-cta-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+.pd-cta-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pd-cta-btn {
+  width: 100%;
+  justify-content: center !important;
+  height: 44px;
+  border-radius: var(--radius-lg) !important;
+  font-weight: 600 !important;
+}
 
 .pd-related { padding: 20px; display: flex; flex-direction: column; gap: 10px; }
 .related-item {

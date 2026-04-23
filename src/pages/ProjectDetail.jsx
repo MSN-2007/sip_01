@@ -160,7 +160,22 @@ export default function ProjectDetail() {
               <div className="pd-proof">
                 {project.proofOfWork?.videoUrl && (
                   <a href={project.proofOfWork.videoUrl} target="_blank" rel="noreferrer" className="proof-item">
-                    <Globe size={16} /> Watch Demo Video <ExternalLink size={12} />
+                    <Video size={16} /> Watch Demo Video <ExternalLink size={12} />
+                  </a>
+                )}
+                {project.proofOfWork?.links?.github && (
+                  <a href={project.proofOfWork.links.github} target="_blank" rel="noreferrer" className="proof-item">
+                    <X size={16} /> GitHub Repository <ExternalLink size={12} />
+                  </a>
+                )}
+                {project.proofOfWork?.links?.linkedin && (
+                  <a href={project.proofOfWork.links.linkedin} target="_blank" rel="noreferrer" className="proof-item">
+                    <Users size={16} /> LinkedIn Update <ExternalLink size={12} />
+                  </a>
+                )}
+                {project.proofOfWork?.links?.docs && (
+                  <a href={project.proofOfWork.links.docs} target="_blank" rel="noreferrer" className="proof-item">
+                    <FileText size={16} /> Documentation <ExternalLink size={12} />
                   </a>
                 )}
                 {project.proofOfWork?.patentNumber && (
@@ -168,7 +183,7 @@ export default function ProjectDetail() {
                     <FileText size={16} /> Patent: {project.proofOfWork.patentNumber}
                   </div>
                 )}
-                {!project.proofOfWork?.videoUrl && !project.proofOfWork?.patentNumber && (
+                {!project.proofOfWork?.videoUrl && !project.proofOfWork?.patentNumber && !project.proofOfWork?.links && (
                   <p className="pd-no-proof">No proof of work links added yet.</p>
                 )}
               </div>
@@ -192,81 +207,100 @@ export default function ProjectDetail() {
 
           {/* Sidebar */}
           <aside className="home-right-sidebar">
-            {/* Builder */}
-            <div className="sidebar-card">
+            {/* Builder Card */}
+            <div className="sidebar-card pd-builder-card">
               <p className="pd-sidebar-label">Posted by</p>
               <Link to={`/profile/${project.userId}`} className="pd-builder">
-                <img src={project.user?.avatar || 'https://ui-avatars.com/api/?name=User'} alt={project.user?.name || 'User'} className="avatar" style={{ width: 48, height: 48 }} />
-                <div>
+                <img 
+                  src={project.user?.avatar || 'https://ui-avatars.com/api/?name=User'} 
+                  alt={project.user?.name || 'User'} 
+                  className="profile-avatar-sm" 
+                  style={{ width: 56, height: 56, borderRadius: 'var(--radius-lg)', objectFit: 'cover' }} 
+                />
+                <div className="pdb-info">
                   <p className="pdb-name">{project.user?.name || 'Anonymous Builder'}</p>
-                  <p className="pdb-tag">{project.user?.tagline || 'Community Member'}</p>
-                  <p className="pdb-loc">📍 {project.user?.location || 'Global'}</p>
+                  <p className="pdb-tag text-muted">{project.user?.tagline || 'Community Member'}</p>
+                  <p className="pdb-loc text-muted">📍 {project.user?.location || 'Global'}</p>
                 </div>
               </Link>
-              <div className="pd-builder-stats">
-                <div className="pdb-stat">
-                  <span className="stat-value">{project.user?.projects || 0}</span>
-                  <span className="stat-label">Projects</span>
+              
+              <div className="pd-builder-stats-box">
+                <div className="pdb-stat-item">
+                  <span className="pdb-stat-val">{project.user?.projects || 0}</span>
+                  <span className="pdb-stat-unit">Projects</span>
                 </div>
-                <div className="pdb-stat">
-                  <span className="stat-value">{(project.user?.followers || 0).toLocaleString()}</span>
-                  <span className="stat-label">Followers</span>
+                <div className="pdb-stat-item">
+                  <span className="pdb-stat-val">{(project.user?.followers || 0).toLocaleString()}</span>
+                  <span className="pdb-stat-unit">Followers</span>
                 </div>
-                <div className="pdb-stat">
-                  <span className="stat-value">{project.user?.sdgScore || 0}</span>
-                  <span className="stat-label">SDG Score</span>
+                <div className="pdb-stat-item">
+                  <span className="pdb-stat-val">{project.user?.sdgScore || 0}</span>
+                  <span className="pdb-stat-unit">SDG Score</span>
                 </div>
               </div>
+
               {!isOwn && (
-                <div className="pd-builder-actions">
+                <div className="pd-builder-actions-group">
                   <button
                     className={`btn btn-sm ${isFollowing ? 'btn-ghost' : 'btn-primary'}`}
-                    style={{ flex: 1, borderRadius: '9999px' }}
+                    style={{ flex: 1, height: 40 }}
                     onClick={handleFollowClick}
                   >
                     {isFollowing ? 'Following' : 'Follow'}
                   </button>
                   <button 
-                    className="btn btn-ghost btn-sm btn-icon" style={{ borderRadius: '9999px' }}
+                    className="btn btn-ghost btn-sm btn-icon" 
+                    style={{ width: 40, height: 40 }}
                     onClick={() => {
-                      if (!user) {
-                        navigate('/login');
-                      } else {
-                        navigate('/messages');
-                      }
+                      if (!user) navigate('/login');
+                      else navigate('/messages');
                     }}
                   >
-                    <MessageSquare size={16} />
+                    <MessageSquare size={18} />
                   </button>
                 </div>
               )}
             </div>
 
-            {/* CTA */}
-            {!isOwn && (
-              <div className="sidebar-card mt-3">
-                <p className="pd-sidebar-label">Collaborate</p>
-                <p className="pd-cta-desc">
-                  {project.stage === 'Production'
-                    ? "This project is in production. Contribute your skills to help improve it."
-                    : "This project is looking for collaborators. Join the builder!"}
-                </p>
-                <button
-                  className="btn btn-primary"
-                  style={{ width: '100%', justifyContent: 'center', borderRadius: '9999px' }}
-                  onClick={handleCollabClick}
-                >
-                  <Zap size={16} />
-                  {project.collaborationCTA}
-                </button>
-                <button
-                  className={`btn ${isLiked ? 'btn-ghost' : 'btn-secondary'}`}
-                  style={{ width: '100%', justifyContent: 'center', borderRadius: '9999px' }}
-                  onClick={handleLikeClick}
-                >
-                  <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} style={{ color: isLiked ? '#ff6b6b' : 'currentColor' }} />
-                  {isLiked ? 'Liked' : 'Like This Project'}
-                </button>
+            {/* Collaboration Card */}
+            {(!isOwn || project.skillsNeeded?.length > 0) && (
+              <div className="sidebar-card pd-cta-card mt-4">
+                <p className="pd-sidebar-label">Collaboration</p>
+                {project.skillsNeeded?.length > 0 && (
+                   <div className="skills-needed-box">
+                      <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: 12, fontWeight: 700, textTransform: 'uppercase' }}>Seeking help with:</p>
+                      <div className="skills-pill-group" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
+                         {project.skillsNeeded.map(s => (
+                           <span key={s} className="mini-skill-badge">{s}</span>
+                         ))}
+                      </div>
+                   </div>
+                )}
+                {!isOwn && (
+                  <>
+                    <p className="pd-cta-desc" style={{ marginTop: project.skillsNeeded?.length > 0 ? 12 : 0 }}>
+                      {project.stage === 'Production'
+                        ? "This project is live. Contribute your skills to scale its impact."
+                        : "Join the team to help build the future!"}
+                    </p>
+                    <div className="pd-cta-actions">
+                      <button
+                        className="btn btn-primary pd-cta-btn"
+                        onClick={handleCollabClick}
+                      >
+                        <Zap size={16} />
+                        {project.collaborationCTA}
+                      </button>
+                      <button
+                        className={`btn ${isLiked ? 'btn-ghost' : 'btn-outline'} pd-cta-btn`}
+                        onClick={handleLikeClick}
+                      >
+                        <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} style={{ color: isLiked ? '#f43f5e' : 'currentColor' }} />
+                        {isLiked ? 'Liked' : 'Value Project'}
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             )}
 

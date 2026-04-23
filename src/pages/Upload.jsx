@@ -45,9 +45,16 @@ const defaultForm = {
   howItWorks: '',
   techStack: [],
   alternativeUses: [''],
-  media: [],
+  media: [], // Still used for images/videos
+  links: {
+    github: '',
+    linkedin: '',
+    docs: '',
+    other: ''
+  },
   skillsNeeded: [],
   openForCollaboration: true,
+  scheduledFor: null, // New: for scheduling posts
 };
 
 export default function Upload() {
@@ -56,14 +63,25 @@ export default function Upload() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(defaultForm);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [skillInput, setSkillInput] = useState('');
 
+  const handleAddSkill = () => {
+    if (skillInput.trim() && !form.skillsNeeded.includes(skillInput.trim())) {
+      set('skillsNeeded', [...form.skillsNeeded, skillInput.trim()]);
+      setSkillInput('');
+    }
+  };
+
+  const removeSkill = (skill) => {
+    set('skillsNeeded', form.skillsNeeded.filter(s => s !== skill));
+  };
+  
   useEffect(() => {
     if (!authLoading && !user) {
       navigate('/login');
     }
   }, [user, authLoading, navigate]);
 
-  // Fallback to prevent crash if unauthenticated
   if (authLoading || !user) {
     return <div style={{ padding: 40, textAlign: 'center' }}>Loading...</div>;
   }
@@ -73,6 +91,23 @@ export default function Upload() {
   const toggleArr = (key, val) => {
     const arr = form[key];
     set(key, arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val]);
+  };
+
+  const [customDomain, setCustomDomain] = useState('');
+  const [customTech, setCustomTech] = useState('');
+
+  const handleAddCustomDomain = () => {
+    if (customDomain.trim() && !form.domainTags.includes(customDomain.trim())) {
+      toggleArr('domainTags', customDomain.trim());
+      setCustomDomain('');
+    }
+  };
+
+  const handleAddCustomTech = () => {
+    if (customTech.trim() && !form.techStack.includes(customTech.trim())) {
+      toggleArr('techStack', customTech.trim());
+      setCustomTech('');
+    }
   };
 
   const next = () => setStep(s => Math.min(s + 1, STEPS.length - 1));
@@ -98,24 +133,25 @@ export default function Upload() {
         avatar: user.avatar, 
         tagline: user.tagline || 'Builder', 
         location: user.location || 'Global',
-        projects: user.projects || 0,
+        projects: (user.projects || 0) + 1,
         followers: user.followers || 0,
         sdgScore: user.sdgScore || 0
       },
-      createdAt: new Date().toISOString().split('T')[0],
+      createdAt: form.scheduledFor || new Date().toISOString().split('T')[0],
       contributors: 1,
       collaborationCTA: form.stage === 'Production' ? 'Contribute' : 'Build With Me',
-      // Schema alignment fixes:
       longDescription: `${form.problemExplained}\n\n${form.solutionApproach}`,
-      sdgTags: [], // Not currently in form, but required for detail page
+      sdgTags: [],
       proofOfWork: {
          images: [],
          videoUrl: form.media[0] || null,
+         links: form.links, // Enhanced links object
          patentNumber: null
       },
       likes: 0,
       views: 0,
-      collaborationRequests: 0
+      collaborationRequests: 0,
+      isScheduled: !!form.scheduledFor
     };
     
     try {
@@ -171,17 +207,42 @@ export default function Upload() {
 
           {/* Step 1: Category */}
           {step === 1 && (
-            <div className="domain-grid-new fade-in">
-              {DOMAINS.map(d => (
-                <div 
-                  key={d} 
-                  className={`domain-option-card ${form.domainTags.includes(d) ? 'selected' : ''}`}
-                  onClick={() => toggleArr('domainTags', d)}
-                >
-                  <Globe size={24} />
-                  <span>{d}</span>
-                </div>
-              ))}
+            <div className="fade-in">
+              <div className="domain-grid-new">
+                {DOMAINS.map(d => (
+                  <div 
+                    key={d} 
+                    className={`domain-option-card ${form.domainTags.includes(d) ? 'selected' : ''}`}
+                    onClick={() => toggleArr('domainTags', d)}
+                  >
+                    <Globe size={24} />
+                    <span>{d}</span>
+                  </div>
+                ))}
+                {/* Custom Domains already added */}
+                {form.domainTags.filter(d => !DOMAINS.includes(d)).map(d => (
+                  <div 
+                    key={d} 
+                    className="domain-option-card selected"
+                    onClick={() => toggleArr('domainTags', d)}
+                  >
+                    <Plus size={24} />
+                    <span>{d}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="custom-tag-input-row" style={{ marginTop: 24, display: 'flex', gap: 12 }}>
+                <input 
+                  className="field-input-new" 
+                  style={{ flex: 1 }}
+                  placeholder="Can't find your domain? Add it here..." 
+                  value={customDomain}
+                  onChange={e => setCustomDomain(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleAddCustomDomain()}
+                />
+                <button className="btn btn-secondary" onClick={handleAddCustomDomain}>Add Domain</button>
+              </div>
             </div>
           )}
 
@@ -223,7 +284,7 @@ export default function Upload() {
           {/* Step 4: Tech Stack */}
           {step === 4 && (
             <div className="fade-in">
-               <div className="tag-selector-new" style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+               <div className="tag-selector-new" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
                   {TECH_STACKS.map(t => (
                     <button 
                       key={t} 
@@ -233,7 +294,28 @@ export default function Upload() {
                       {t}
                     </button>
                   ))}
+                  {form.techStack.filter(t => !TECH_STACKS.includes(t)).map(t => (
+                    <button 
+                      key={t} 
+                      className="domain-pill active"
+                      onClick={() => toggleArr('techStack', t)}
+                    >
+                      {t}
+                    </button>
+                  ))}
                </div>
+
+               <div className="custom-tag-input-row" style={{ display: 'flex', gap: 12 }}>
+                <input 
+                  className="field-input-new" 
+                  style={{ flex: 1 }}
+                  placeholder="Add a technology (e.g. OpenCV, Arduino...)" 
+                  value={customTech}
+                  onChange={e => setCustomTech(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleAddCustomTech()}
+                />
+                <button className="btn btn-secondary" onClick={handleAddCustomTech}>Add Tech</button>
+              </div>
             </div>
           )}
 
@@ -248,16 +330,41 @@ export default function Upload() {
             </div>
           )}
 
-          {/* Step 6: Media */}
+          {/* Step 6: Media & Links */}
           {step === 6 && (
             <div className="fade-in">
-              <div className="form-field-group">
-                 <label className="field-label-new">Pitch / Demo Link</label>
-                 <div className="auth-input-wrapper">
+              <div className="media-links-grid">
+                <div className="form-field-group">
+                  <label className="field-label-new">Pitch / Demo Link (Video URL)</label>
+                  <div className="auth-input-wrapper">
                     <Video className="auth-input-icon" size={18} />
                     <input className="field-input-new" style={{ paddingLeft: 40 }} placeholder="https://youtube.com/..." value={form.media[0] || ''} onChange={e => set('media', [e.target.value])} />
-                 </div>
-                 <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: 8 }}>Paste a link to your prototype video or live deployment.</p>
+                  </div>
+                </div>
+
+                <div className="form-field-group">
+                  <label className="field-label-new">GitHub Repository</label>
+                  <div className="auth-input-wrapper">
+                    <X className="auth-input-icon" size={18} />
+                    <input className="field-input-new" style={{ paddingLeft: 40 }} placeholder="https://github.com/..." value={form.links.github} onChange={e => set('links', { ...form.links, github: e.target.value })} />
+                  </div>
+                </div>
+
+                <div className="form-field-group">
+                  <label className="field-label-new">LinkedIn Post</label>
+                  <div className="auth-input-wrapper">
+                    <Users className="auth-input-icon" size={18} />
+                    <input className="field-input-new" style={{ paddingLeft: 40 }} placeholder="https://linkedin.com/..." value={form.links.linkedin} onChange={e => set('links', { ...form.links, linkedin: e.target.value })} />
+                  </div>
+                </div>
+
+                <div className="form-field-group">
+                  <label className="field-label-new">Documentation / Blog</label>
+                  <div className="auth-input-wrapper">
+                    <Globe className="auth-input-icon" size={18} />
+                    <input className="field-input-new" style={{ paddingLeft: 40 }} placeholder="https://docs.link..." value={form.links.docs} onChange={e => set('links', { ...form.links, docs: e.target.value })} />
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -265,41 +372,91 @@ export default function Upload() {
           {/* Step 7: Collaboration */}
           {step === 7 && (
             <div className="fade-in">
-               <div className="kanban-card glass-card" style={{ padding: 24, border: form.openForCollaboration ? '2px solid var(--accent-primary)' : '1px solid var(--border-subtle)', cursor: 'pointer' }} onClick={() => set('openForCollaboration', !form.openForCollaboration)}>
+               <div className="collaboration-toggle-card glass-card" 
+                 style={{ 
+                   padding: 24, 
+                   border: form.openForCollaboration ? '2px solid var(--accent-primary)' : '1px solid var(--border-subtle)', 
+                   cursor: 'pointer',
+                   background: form.openForCollaboration ? 'rgba(99, 102, 241, 0.05)' : 'transparent'
+                 }} 
+                 onClick={() => set('openForCollaboration', !form.openForCollaboration)}
+               >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                      <div>
                         <h4 style={{ fontSize: '1.2rem', fontWeight: 800 }}>Open for Collaboration</h4>
                         <p className="text-muted" style={{ fontSize: '0.9rem' }}>Allow other builders to send you collaboration requests.</p>
                      </div>
-                     <div style={{ width: 24, height: 24, borderRadius: 12, background: form.openForCollaboration ? 'var(--accent-primary)' : 'var(--bg-input)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {form.openForCollaboration && <CheckCircle size={14} color="white" />}
+                     <div style={{ width: 32, height: 32, borderRadius: 16, background: form.openForCollaboration ? 'var(--accent-primary)' : 'var(--bg-elevated)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s ease' }}>
+                        {form.openForCollaboration && <CheckCircle size={18} color="white" />}
                      </div>
                   </div>
                </div>
 
                {form.openForCollaboration && (
-                 <div className="form-field-group" style={{ marginTop: 24 }}>
-                    <label className="field-label-new">Skills Needed</label>
-                    <input className="field-input-new" placeholder="Frontend, PCB Design, ML..." value={form.skillsNeeded.join(',')} onChange={e => set('skillsNeeded', e.target.value.split(','))} />
+                 <div className="skills-section fade-in" style={{ marginTop: 32 }}>
+                    <label className="field-label-new">Skills Needed <span className="text-muted">(Add multiple to attract different domains)</span></label>
+                    <div className="custom-tag-input-row" style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                      <input 
+                        className="field-input-new" 
+                        style={{ flex: 1 }}
+                        placeholder="e.g. PCB Design, UI/UX, Flutter..." 
+                        value={skillInput}
+                        onChange={e => setSkillInput(e.target.value)}
+                        onKeyDown={e => e.key === 'Enter' && handleAddSkill()}
+                      />
+                      <button className="btn btn-secondary" onClick={handleAddSkill}>Add</button>
+                    </div>
+
+                    <div className="skills-pill-group" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                       {form.skillsNeeded.map(skill => (
+                         <div key={skill} className="skill-pill">
+                           {skill}
+                           <X size={14} className="pill-remove" onClick={() => removeSkill(skill)} />
+                         </div>
+                       ))}
+                       {form.skillsNeeded.length === 0 && (
+                         <p className="text-muted" style={{ fontSize: '0.85rem' }}>No skills added yet.</p>
+                       )}
+                    </div>
                  </div>
                )}
             </div>
           )}
 
-          {/* Step 8: Review */}
+          {/* Step 8: Review & Schedule */}
           {step === 8 && (
-             <div className="fade-in shadow-card" style={{ padding: 24, borderRadius: 16, background: 'rgba(255,255,255,0.02)' }}>
-                <div style={{ display: 'flex', gap: 24 }}>
-                   <div style={{ flex: 1 }}>
-                      <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 12 }}>{form.title}</h3>
-                      <p className="text-muted" style={{ marginBottom: 24 }}>{form.shortDescription}</p>
-                      <div className="profile-badges">
-                         <span className="badge-item">{form.stage}</span>
-                         {form.domainTags.map(t => <span key={t} className="badge-item">{t}</span>)}
+             <div className="fade-in">
+                <div className="shadow-card review-card" style={{ padding: 24, borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-subtle)' }}>
+                   <div style={{ display: 'flex', gap: 24 }}>
+                      <div style={{ flex: 1 }}>
+                         <h3 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: 12 }}>{form.title}</h3>
+                         <p className="text-muted" style={{ marginBottom: 24 }}>{form.shortDescription}</p>
+                         <div className="profile-badges" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            <span className="badge-item">{form.stage}</span>
+                            {form.domainTags.map(t => <span key={t} className="badge-item">{t}</span>)}
+                         </div>
+                      </div>
+                      <div style={{ width: 120, height: 120, background: 'var(--bg-elevated)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                         <Rocket size={48} className="text-gradient-icon" />
                       </div>
                    </div>
-                   <div style={{ width: 120, height: 120, background: 'var(--bg-elevated)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyCenter: 'center' }}>
-                      <Rocket size={48} />
+                </div>
+
+                <div className="scheduling-section glass-card" style={{ marginTop: 24, padding: 20 }}>
+                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+                      <Layers size={20} color="var(--accent-primary)" />
+                      <h4 style={{ fontWeight: 700 }}>Post Management</h4>
+                   </div>
+                   <div className="form-field-group">
+                      <label className="field-label-new">Schedule Post <span className="text-muted">(Optional)</span></label>
+                      <input 
+                        type="date" 
+                        className="field-input-new" 
+                        value={form.scheduledFor || ''} 
+                        onChange={e => set('scheduledFor', e.target.value)} 
+                        min={new Date().toISOString().split('T')[0]}
+                      />
+                      <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: 8 }}>Leave blank to publish immediately.</p>
                    </div>
                 </div>
              </div>

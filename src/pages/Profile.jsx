@@ -62,6 +62,16 @@ export default function Profile() {
     };
     fetchUser();
   }, [id, currentUser]);
+  const [banner, setBanner] = useState(profileUser?.banner || 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)');
+  const [isBannerModalOpen, setIsBannerModalOpen] = useState(false);
+
+  const isOwn = currentUser && currentUser.uid === id;
+
+  const handleBannerChange = (newBanner) => {
+    setBanner(newBanner);
+    setIsBannerModalOpen(false);
+    // In a real app, you'd save this to Firebase here
+  };
 
   const userProjects = useMemo(() => {
     if (!profileUser) return [];
@@ -71,10 +81,11 @@ export default function Profile() {
   const userActivity = useMemo(() => {
     if (!userProjects.length) return [];
     
-    // Map project creation dates to counts
     const counts = {};
     userProjects.forEach(p => {
-      const date = p.createdAt?.split('T')[0] || p.createdAt;
+      // Ensure we have a valid ISO date for the heatmap
+      const dateRaw = p.createdAt?.seconds ? new Date(p.createdAt.seconds * 1000) : new Date(p.createdAt || Date.now());
+      const date = dateRaw.toISOString().split('T')[0];
       if (date) {
         counts[date] = (counts[date] || 0) + 1;
       }
@@ -83,6 +94,7 @@ export default function Profile() {
     return Object.entries(counts).map(([date, count]) => ({ date, count }));
   }, [userProjects]);
 
+  // ... (stats and badges logic same as before)
   const groupedProjects = useMemo(() => {
     return {
       Idea: userProjects.filter(p => p.stage === 'Idea'),
@@ -97,21 +109,45 @@ export default function Profile() {
     communities: profileUser?.joinedCommunities?.length || 0,
   };
 
-  if (loading) {
-     return <div className="profile-container-new" style={{ padding: 40, textAlign: 'center' }}>Loading Profile...</div>;
-  }
+  const badges = useMemo(() => {
+    const list = [];
+    if (!profileUser) return list;
+    if (profileUser.name && profileUser.avatar) list.push({ id: 'verified', label: 'Verified', Icon: ShieldCheck });
+    if (userProjects.length >= 10) list.push({ id: 'top-builder', label: 'Top Builder', Icon: Award });
+    const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+    const earliestProjectDate = userProjects.length > 0 
+      ? Math.min(...userProjects.map(p => {
+          const d = p.createdAt?.seconds ? new Date(p.createdAt.seconds * 1000) : new Date(p.createdAt || Date.now());
+          return d.getTime();
+        })) 
+      : null;
+    if (userProjects.length >= 1 && earliestProjectDate && (Date.now() - earliestProjectDate) >= thirtyDaysInMs) {
+      list.push({ id: 'active', label: 'Active Collaborator', Icon: Users });
+    }
+    if (groupedProjects.Production.length > 0) {
+      list.push({ id: 'prod', label: `${groupedProjects.Production.length} Shipped`, Icon: Rocket });
+    }
+    return list;
+  }, [profileUser, userProjects, groupedProjects.Production]);
 
-  if (!profileUser) {
-     return <div className="profile-container-new" style={{ padding: 40, textAlign: 'center' }}>User Profile Not Found</div>;
-  }
+  if (loading) return <div className="profile-container-new">Loading...</div>;
+  if (!profileUser) return <div className="profile-container-new">Not Found</div>;
 
   const user = profileUser;
 
   return (
     <div className="profile-container-new">
-      {/* Identity Section */}
       <header className="profile-header-new">
-        <div className="profile-banner" />
+        <div 
+          className="profile-banner-new" 
+          style={{ background: banner, backgroundSize: 'cover', backgroundPosition: 'center' }}
+        >
+          {isOwn && (
+            <button className="btn-change-banner" onClick={() => setIsBannerModalOpen(true)}>
+              <Camera size={16} /> Change Banner
+            </button>
+          )}
+        </div>
         <div className="profile-identity-card">
           <div className="profile-main-info">
             <div className="avatar-stack">
@@ -126,15 +162,21 @@ export default function Profile() {
               <p className="profile-tagline-new">{user.tagline}</p>
               
               <div className="profile-badges">
-                <div className="badge-item"><ShieldCheck size={14} /> Verified</div>
-                <div className="badge-item"><Award size={14} /> Top Builder</div>
-                <div className="badge-item"><Users size={14} /> Active Collaborator</div>
-                <div className="badge-item"><Rocket size={14} /> {groupedProjects.Production.length} Production Projects</div>
+                {badges.map(badge => {
+                  const Icon = badge.Icon;
+                  return (
+                    <div key={badge.id} className="badge-item">
+                      <Icon size={14} /> {badge.label}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-            <button className="btn btn-primary" onClick={() => navigate('/upload')}>
-              <Plus size={18} /> Create Project
-            </button>
+            {isOwn && (
+              <button className="btn btn-primary" onClick={() => navigate('/upload')}>
+                <Plus size={18} /> Create Project
+              </button>
+            )}
           </div>
 
           <div className="profile-stats-row">

@@ -11,22 +11,38 @@
   margin-bottom: 24px;
 }
 
-.profile-banner {
+.profile-banner-new {
   height: 240px;
   width: 100%;
   background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.profile-banner::after {
-  content: "";
+.btn-change-banner {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 20;
+  transition: all 0.2s ease;
+}
+
+.btn-change-banner:hover {
+  background: rgba(0, 0, 0, 0.6);
+  transform: translateY(-2px);
 }
 
 .profile-identity-card {

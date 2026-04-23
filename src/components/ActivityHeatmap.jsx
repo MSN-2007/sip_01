@@ -36,6 +36,22 @@ export default function ActivityHeatmap({ data = [] }) {
     return cols;
   }, [fullYearData]);
 
+  // Calculate dynamic month labels and their positions
+  const monthLabels = useMemo(() => {
+    const labels = [];
+    let lastMonth = -1;
+    
+    columns.forEach((col, i) => {
+      const firstDay = new Date(col[0].date);
+      const month = firstDay.getMonth();
+      if (month !== lastMonth) {
+        labels.push({ name: months[month], index: i });
+        lastMonth = month;
+      }
+    });
+    return labels;
+  }, [columns, months]);
+
   const getColorClass = (count) => {
     if (count === 0) return 'level-0';
     if (count === 1) return 'level-1';
@@ -81,8 +97,20 @@ export default function ActivityHeatmap({ data = [] }) {
               </div>
             ))}
           </div>
-          <div className="months-labels">
-            {months.map(m => <span key={m}>{m}</span>)}
+          <div className="months-labels" style={{ position: 'relative' }}>
+            {monthLabels.map((m, i) => (
+              <span 
+                key={i} 
+                className="month-label" 
+                style={{ 
+                  position: 'absolute', 
+                  left: `${m.index * 14}px`, // 10px cell + 4px gap
+                  fontSize: '0.7rem' 
+                }}
+              >
+                {m.name}
+              </span>
+            ))}
           </div>
         </div>
       </div>

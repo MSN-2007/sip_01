@@ -101,7 +101,17 @@ export function AppProvider({ children }) {
 
   const addProject = async (project) => {
     setProjects(prev => [project, ...prev]);
-    // Persistence would happen in Upload page service call
+    // Persistence happened in the Upload service call
+  };
+
+  const deleteProject = async (projectId) => {
+    // 1. Remove from database (Importing service)
+    const { deleteProject: deleteFromDb } = await import('../services/db');
+    await deleteFromDb(projectId);
+    
+    // 2. Update local state
+    setProjects(prev => prev.filter(p => p.id !== projectId));
+    return true;
   };
 
   const markAllNotificationsRead = () => {
@@ -154,7 +164,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       user, authLoading, projects, communities, users,
       following, joinedCommunities, likedProjects, notifications,
-      theme, toggleFollow, toggleJoinCommunity, toggleLike, addProject, addCommunity, loginAsDemo, markAllNotificationsRead, toggleTheme
+      theme, toggleFollow, toggleJoinCommunity, toggleLike, addProject, deleteProject, addCommunity, loginAsDemo, markAllNotificationsRead, toggleTheme
     }}>
       {children}
     </AppContext.Provider>

@@ -32,8 +32,9 @@ const domainImages = {
 
 export default function ProjectCard({ project }) {
   const navigate = useNavigate();
-  const { likedProjects, toggleLike, user } = useApp();
+  const { likedProjects, toggleLike, user, deleteProject } = useApp();
   const isLiked = likedProjects.includes(project.id);
+  const isOwner = user && project.userId === user.id;
   const [localLikes, setLocalLikes] = useState(project.likes);
   const [isShareOpen, setIsShareOpen] = useState(false);
 
@@ -52,6 +53,18 @@ export default function ProjectCard({ project }) {
     e.preventDefault();
     e.stopPropagation();
     setIsShareOpen(true);
+  };
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (window.confirm(`Delete "${project.title}" forever? This cannot be undone.`)) {
+      try {
+        await deleteProject(project.id);
+      } catch (err) {
+        alert("Failed to delete project: " + err.message);
+      }
+    }
   };
 
   const stage = stageConfig[project.stage] || stageConfig.Idea;
@@ -82,17 +95,19 @@ export default function ProjectCard({ project }) {
               <span className={`pc2-domain-tag domain-${domainKey}`}>
                 <DomainIcon size={12} /> {mainDomain}
               </span>
-              {project.techStack?.slice(0, 1).map(t => (
-                <span key={t} className="pc2-tech-mini">{t}</span>
-              ))}
            </div>
            
            {/* Actions overlaying top right */}
            <div className="pc2-actions">
+              {isOwner && (
+                <button onClick={handleDelete} className="pc2-icon-btn delete-btn" title="Delete Project">
+                  <X size={16} />
+                </button>
+              )}
               <button onClick={handleLike} className={`pc2-icon-btn ${isLiked ? 'liked' : ''}`}>
                 <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} />
               </button>
-              <button onClick={handleShare} className="pc2-icon-btn">
+              <button onClick={handleShare} className="pc2-icon-btn" title="Share Project">
                 <Share2 size={16} />
               </button>
            </div>

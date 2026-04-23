@@ -359,6 +359,50 @@ h3 { font-size: clamp(1.1rem, 2vw, 1.4rem); }
 .fade-in { animation: fadeIn 0.4s ease forwards; }
 .fade-in-slow { animation: fadeIn 0.7s ease forwards; }
 
+/* ── Global UI Components ── */
+.mini-skill-badge {
+  padding: 4px 10px;
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--accent-primary);
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pc2-icon-btn.delete-btn {
+  color: #f43f5e;
+}
+.pc2-icon-btn.delete-btn:hover {
+  background: rgba(244, 63, 94, 0.15);
+  color: #ff1a43;
+}
+
+.proof-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+.proof-item svg { color: var(--accent-primary); }
+.proof-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  transform: translateX(4px);
+}
+
+.text-gradient-icon {
+  color: var(--accent-primary);
+  filter: drop-shadow(0 0 8px var(--accent-primary-glow));
+}
+
 /* ── Grid layouts ── */
 .project-grid {
   display: grid;

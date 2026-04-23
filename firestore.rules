@@ -8,26 +8,40 @@ service cloud.firestore {
     }
     
     function isOwner(userId) {
-      return request.auth.uid == userId;
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Projects: Anyone can read, only signed in users can create, only owners can edit
+    // Schema Validation Helpers
+    function isValidProject() {
+      return request.resource.data.userId == request.auth.uid;
+    }
+
+    function isValidMessage() {
+      return request.resource.data.userId == request.auth.uid;
+    }
+
+    // Projects: Anyone can read, only owners can create/update/delete
     match /projects/{projectId} {
       allow read: if true;
-      allow create: if isSignedIn();
+      allow create: if isSignedIn() && isValidProject();
       allow update, delete: if isOwner(resource.data.userId);
     }
     
-    // Communities: Anyone can read, only signed in users can join/leave
+    // Communities: Anyone can read, only owners can edit metadata
     match /communities/{communityId} {
       allow read: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isOwner(resource.data.userId) || (
+        // Allow members to update ONLY their joined Status (if implemented via array)
+        // But for metadata, only owner
+        isOwner(resource.data.userId)
+      );
       
       // Subcollection for messages
       match /messages/{messageId} {
-        allow read: if isSignedIn(); // Must be signed in to see community chats
-        allow create: if isSignedIn();
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && isValidMessage();
+        allow delete: if isOwner(resource.data.userId);
       }
     }
     
@@ -39,11 +53,18 @@ service cloud.firestore {
     
     // Connections: Only participants can read/write
     match /connections/{connectionId} {
-      allow read, write: if isSignedIn() && (
+      allow read: if isSignedIn() && (
         request.auth.uid == resource.data.from || 
-        request.auth.uid == resource.data.to ||
-        request.auth.uid == request.resource.data.from ||
-        request.auth.uid == request.resource.data.to
+        request.auth.uid == resource.data.to
+      );
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.from;
+      allow update: if isSignedIn() && (
+        request.auth.uid == resource.data.to || // Target can accept
+        request.auth.uid == resource.data.from  // Requester can cancel/withdraw
+      );
+      allow delete: if isSignedIn() && (
+        request.auth.uid == resource.data.from || 
+        request.auth.uid == resource.data.to
       );
     }
   }

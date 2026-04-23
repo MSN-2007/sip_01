@@ -8,10 +8,11 @@ service firebase.storage {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
-    // Project proof of work images
-    match /projects/{projectId}/{allPaths=**} {
+    // Project proof of work images/videos
+    // Structured as /projects/{userId}/{projectId}/filename
+    match /projects/{userId}/{projectId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null; // Ideally check if owner of project document
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }

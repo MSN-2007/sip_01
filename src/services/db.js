@@ -1,5 +1,14 @@
 import { db } from '../config/firebase';
-import { collection, getDocs, getDoc, doc, setDoc, addDoc, updateDoc, arrayUnion, arrayRemove, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, setDoc, addDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, query, where, orderBy } from 'firebase/firestore';
+
+// Helper: Data Validation
+function validate(data, requiredFields) {
+  for (const field of requiredFields) {
+    if (data[field] === undefined || data[field] === null || data[field] === '') {
+      throw new Error(`Security Exception: Missing required field "${field}"`);
+    }
+  }
+}
 
 // --- Projects ---
 export async function getProjects() {
@@ -9,15 +18,20 @@ export async function getProjects() {
 }
 
 export async function addProject(projectData) {
-  // Add a new document with a generated id
+  validate(projectData, ['userId', 'title', 'stage']);
   const docRef = await addDoc(collection(db, 'projects'), {
     ...projectData,
     likes: 0,
     views: 0,
     collaborationRequests: 0,
-    createdAt: new Date().toISOString()
+    createdAt: projectData.createdAt || new Date().toISOString()
   });
   return { id: docRef.id, ...projectData };
+}
+
+export async function deleteProject(projectId) {
+  await deleteDoc(doc(db, 'projects', projectId));
+  return true;
 }
 
 export async function toggleLikeProject(projectId, userId) {
@@ -47,6 +61,7 @@ export function subscribeToCommunityMessages(communityId, callback) {
 }
 
 export async function sendCommunityMessage(communityId, messageData) {
+  validate(messageData, ['userId', 'text']);
   const docRef = await addDoc(collection(db, 'communities', communityId, 'messages'), {
     ...messageData,
     createdAt: new Date().toISOString()

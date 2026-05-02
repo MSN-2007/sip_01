@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Zap, Layers, ArrowRight, Share2, Code2, Cpu, Globe, Sprout, HeartPulse } from 'lucide-react';
+import { Heart, Zap, Layers, ArrowRight, Share2, Code2, Cpu, Globe, Sprout, HeartPulse, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import ShareModal from './ShareModal';
 import './ProjectCard.css';

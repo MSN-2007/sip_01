@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Plus, Rocket, Users, MessageSquare, ArrowRight, Sparkles, Flame, Compass } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import ProjectCard from '../components/ProjectCard';
@@ -9,6 +9,7 @@ const DOMAIN_OPTIONS = ['All', 'AI', 'IoT', 'Agriculture', 'Health', 'Robotics']
 
 export default function Home() {
   const { projects, user } = useApp();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDomain, setActiveDomain] = useState('All');
   const [isFabOpen, setIsFabOpen] = useState(false);
@@ -17,8 +18,8 @@ export default function Home() {
     let base = [...(projects || [])];
     if (searchQuery) {
       base = base.filter(p => 
-        p.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        p.problemTitle?.toLowerCase().includes(searchQuery.toLowerCase())
+        p.title?.toLowerCase()?.includes(searchQuery.toLowerCase()) || 
+        p.problemTitle?.toLowerCase()?.includes(searchQuery.toLowerCase())
       );
     }
     if (activeDomain !== 'All') {
@@ -29,8 +30,8 @@ export default function Home() {
     let recommended = [];
     if (user?.tagline) {
       recommended = base.filter(p => 
-        p.domainTags?.some(d => user.tagline.includes(d)) || 
-        p.techStack?.some(t => user.tagline.includes(t))
+        p.domainTags?.some(d => typeof user.tagline === 'string' && typeof d === 'string' && user.tagline.includes(d)) || 
+        p.techStack?.some(t => typeof user.tagline === 'string' && typeof t === 'string' && user.tagline.includes(t))
       ).slice(0, 3);
     }
 

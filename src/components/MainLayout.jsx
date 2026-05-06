@@ -22,7 +22,16 @@ export default function MainLayout({ children, rightPanelContent }) {
          </button>
       </header>
 
-      {/* Overlay Backdrop for Mobile */}
+      {/* Desktop Right Panel Toggle */}
+      <button 
+        className={`desktop-right-toggle ${isRightOpen ? 'hidden' : ''}`}
+        onClick={() => setIsRightOpen(true)}
+      >
+        <Bell size={20} />
+        {/* We could add an unread badge here if we had access to notifications context, but leaving simple for now */}
+      </button>
+
+      {/* Overlay Backdrop */}
       {(isSidebarOpen || isRightOpen) && (
         <div 
           className="layout-overlay" 

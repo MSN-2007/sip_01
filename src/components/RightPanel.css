@@ -1,11 +1,6 @@
 .right-panel {
-  width: 300px;
-  max-width: 300px;
   background-color: var(--bg-primary);
-  border-left: 1px solid var(--border-subtle);
   height: 100vh;
-  position: sticky;
-  top: 0;
   overflow-y: auto;
   z-index: 100;
 }
@@ -249,10 +244,3 @@
   box-shadow: var(--shadow-sm);
 }
 
-@media (max-width: 1200px) {
-  /* Let MainLayout.css handle fixed positioning and transform for sliding effect */
-  .right-panel {
-    border-left: none;
-    border-right: 1px solid var(--border-subtle); /* If opening from right, it's border-left, but we use fixed right anyway */
-  }
-}

@@ -65,10 +65,37 @@ export default function Connects() {
 
   const recommended = useMemo(() => {
     return users
-      .filter(u => u.id !== currentUser.id)
+      .filter(u => {
+        if (u.id === currentUser.id) return false;
+        if (search) {
+          const query = search.toLowerCase();
+          return (
+            (u.name && u.name.toLowerCase().includes(query)) ||
+            (u.tagline && u.tagline.toLowerCase().includes(query)) ||
+            (u.skills && u.skills.some(skill => skill.toLowerCase().includes(query)))
+          );
+        }
+        return true;
+      })
       .slice(0, 8)
       .map(u => ({ ...u, reason: 'Similar tech stack' }));
-  }, [users, currentUser]);
+  }, [users, currentUser, search]);
+
+  const filteredPending = useMemo(() => {
+    return pendingRequests.filter(req => {
+      const u = users.find(x => x.id === req.from);
+      if (!u) return false;
+      if (search) {
+        const query = search.toLowerCase();
+        return (
+          (u.name && u.name.toLowerCase().includes(query)) ||
+          (u.tagline && u.tagline.toLowerCase().includes(query)) ||
+          (u.skills && u.skills.some(skill => skill.toLowerCase().includes(query)))
+        );
+      }
+      return true;
+    });
+  }, [pendingRequests, users, search]);
 
   return (
     <div className="home-page-new">
@@ -94,7 +121,7 @@ export default function Connects() {
              </div>
              
              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {pendingRequests.length > 0 ? pendingRequests.map(req => {
+                {filteredPending.length > 0 ? filteredPending.map(req => {
                    const u = users.find(x => x.id === req.from);
                    if (!u) return null;
                    return (
@@ -123,7 +150,7 @@ export default function Connects() {
                 }) : (
                    <div className="empty-state-new" style={{ padding: 48, textAlign: 'center', background: 'var(--bg-elevated)', borderRadius: 24, border: '1px dashed var(--border-subtle)' }}>
                       <Users size={48} style={{ marginBottom: 16, opacity: 0.3 }} />
-                      <p className="text-muted">You have no pending requests.</p>
+                      <p className="text-muted">{search ? `No pending requests matching "${search}".` : "You have no pending requests."}</p>
                    </div>
                 )}
              </div>
@@ -135,31 +162,35 @@ export default function Connects() {
                 <h2 className="section-title-new" style={{ fontSize: '1rem', fontWeight: 700 }}><Star size={20} style={{ color: '#fbbf24', marginRight: 8 }} /> Suggested</h2>
              </div>
              
-             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {recommended.map(u => (
-                   <div key={u.id} className="kanban-card glass-card" style={{ padding: 16, border: '1px solid var(--border-subtle)' }}>
-                      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
-                         <img src={u.avatar} alt={u.name} className="avatar" style={{ width: 44, height: 44, borderRadius: 12 }} />
-                         <div style={{ minWidth: 0 }}>
-                            <h5 style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>{u.name}</h5>
-                            <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 600 }}>{u.reason}</span>
-                         </div>
-                      </div>
-                      <button 
-                        className={`btn btn-sm ${requested.includes(u.id) ? 'btn-ghost' : 'btn-secondary'}`} 
-                        style={{ width: '100%', fontSize: '0.8rem' }}
-                        onClick={() => handleRequest(u.id)}
-                        disabled={requested.includes(u.id) || loadingAction === u.id}
-                      >
-                         {requested.includes(u.id) 
-                           ? <><Check size={14} /> Requested</> 
-                           : loadingAction === u.id 
-                             ? 'Sending...'
-                             : <><UserPlus size={14} /> Connect</>}
-                      </button>
-                   </div>
-                ))}
-             </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                 {recommended.length > 0 ? recommended.map(u => (
+                    <div key={u.id} className="kanban-card glass-card" style={{ padding: 16, border: '1px solid var(--border-subtle)' }}>
+                       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+                          <img src={u.avatar} alt={u.name} className="avatar" style={{ width: 44, height: 44, borderRadius: 12 }} />
+                          <div style={{ minWidth: 0 }}>
+                             <h5 style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>{u.name}</h5>
+                             <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 600 }}>{u.reason}</span>
+                          </div>
+                       </div>
+                       <button 
+                         className={`btn btn-sm ${requested.includes(u.id) ? 'btn-ghost' : 'btn-secondary'}`} 
+                         style={{ width: '100%', fontSize: '0.8rem' }}
+                         onClick={() => handleRequest(u.id)}
+                         disabled={requested.includes(u.id) || loadingAction === u.id}
+                       >
+                          {requested.includes(u.id) 
+                            ? <><Check size={14} /> Requested</> 
+                            : loadingAction === u.id 
+                              ? 'Sending...'
+                              : <><UserPlus size={14} /> Connect</>}
+                       </button>
+                    </div>
+                 )) : (
+                    <div className="text-muted" style={{ fontSize: '0.85rem', textAlign: 'center', padding: '16px 0' }}>
+                       No users found matching "{search}".
+                    </div>
+                 )}
+              </div>
              
              <div className="kanban-card glass-card" style={{ padding: 24, marginTop: 32, background: 'var(--accent-primary-gradient)', border: 'none' }}>
                 <h4 style={{ color: 'white', fontSize: '1.1rem', fontWeight: 800 }}>Expand your network</h4>

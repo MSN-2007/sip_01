@@ -12,7 +12,7 @@ import {
   Layers
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { MOCK_ACTIVITY } from '../data/mockData';
+
 import ActivityHeatmap from '../components/ActivityHeatmap';
 import './Profile.css';
 

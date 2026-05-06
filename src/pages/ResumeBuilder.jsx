@@ -5,7 +5,7 @@ import {
   MapPin, Code2, BarChart3, Users, Star, Trophy, Brain
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { MOCK_ACTIVITY, SDG_GOALS } from '../data/mockData';
+import { SDG_GOALS } from '../data/mockData';
 import ActivityHeatmap from '../components/ActivityHeatmap';
 import ShareModal from '../components/ShareModal';
 import './ResumeBuilder.css';
@@ -116,6 +116,19 @@ export default function ResumeBuilder() {
 
   /* ── Derived data ── */
   const userProjects = useMemo(() => projects.filter(p => p.userId === user.id), [projects, user.id]);
+
+  const userActivity = useMemo(() => {
+    if (!userProjects.length) return [];
+    const counts = {};
+    userProjects.forEach(p => {
+      const dateRaw = p.createdAt?.seconds ? new Date(p.createdAt.seconds * 1000) : new Date(p.createdAt || Date.now());
+      const date = dateRaw.toISOString().split('T')[0];
+      if (date) {
+        counts[date] = (counts[date] || 0) + 1;
+      }
+    });
+    return Object.entries(counts).map(([date, count]) => ({ date, count }));
+  }, [userProjects]);
 
   const rankedStack = useMemo(() => rankTechStack(userProjects), [userProjects]);
 
@@ -373,7 +386,7 @@ export default function ResumeBuilder() {
           <section className="resume-section-new">
             <h3 className="resume-section-title-new"><Activity size={20} /> Platform Contribution Heatmap</h3>
             <div className="kanban-card glass-card" style={{ padding: 24 }}>
-              <ActivityHeatmap data={MOCK_ACTIVITY} />
+              <ActivityHeatmap data={userActivity} />
             </div>
           </section>
         </div>

@@ -46,7 +46,7 @@ export default function Home() {
       .sort((a, b) => (b.views + b.likes) - (a.views + a.likes))
       .slice(0, 3);
 
-    const explore = base.filter(p => !recommended.includes(p) && !trending.includes(p)).slice(0, 4);
+    const explore = base.filter(p => !recommended.includes(p) && !trending.includes(p));
 
     return { recommended, trending, explore };
   }, [projects, searchQuery, activeDomain, user?.tagline]);

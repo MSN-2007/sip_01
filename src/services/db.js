@@ -61,7 +61,7 @@ export function subscribeToCommunityMessages(communityId, callback) {
 }
 
 export async function sendCommunityMessage(communityId, messageData) {
-  validate(messageData, ['userId', 'text']);
+  validate(messageData, ['senderId', 'text']);
   const docRef = await addDoc(collection(db, 'communities', communityId, 'messages'), {
     ...messageData,
     createdAt: new Date().toISOString()

@@ -52,6 +52,7 @@ export function AppProvider({ children }) {
   const [likedProjects, setLikedProjects] = useState([]);
   const [notifications, setNotifications] = useState([]);
 
+  useEffect(() => {
     getProjects().then(fetchedProjects => {
       if (fetchedProjects.length > 0) {
         setProjects(prev => {

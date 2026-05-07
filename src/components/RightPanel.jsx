@@ -1,19 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Bell, 
-  Briefcase, 
-  UserPlus, 
-  Plus, 
-  Globe, 
-  Search, 
-  ArrowRight,
-  Filter
-} from 'lucide-react';
+import { Bell, Briefcase, UserPlus, Plus, Globe, Search, ArrowRight, TrendingUp } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import './RightPanel.css';
 
-export default function RightPanel() {
+export default function RightPanel({ isOpen, onClose, children }) {
   const { notifications, projects, user } = useApp();
   const navigate = useNavigate();
   const [commSearch, setCommSearch] = useState('');
@@ -30,103 +20,121 @@ export default function RightPanel() {
     }
   };
 
+  const BuilderScore = 85;
+
   return (
-    <aside className="right-panel">
-      <div className="rp-inner">
+    <aside className={`
+      fixed top-0 right-0 h-full w-[320px] bg-[#0F0F11]/60 backdrop-blur-[12px] border-l border-white/[0.08] z-50
+      transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col
+      ${isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0 lg:static lg:block hidden'}
+    `}>
+      <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-8">
         
-        {/* Community Search Section - NEW */}
-        <section className="rp-section">
-           <div className="rp-section-header">
-             <h3 className="rp-section-title"><Globe size={18} /> Discovery</h3>
+        {/* Rising Builder Section - Circular Glowing Gauge */}
+        <section>
+          <div className="flex items-center gap-2 mb-4">
+             <TrendingUp size={16} className="text-[#a855f7]" strokeWidth={1.5} />
+             <h3 className="font-display font-semibold text-white tracking-tight">Rising Builder</h3>
+          </div>
+          <div className="bg-[#050505] border border-white/5 rounded-2xl p-6 flex flex-col items-center justify-center relative overflow-hidden group cursor-default">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#6366f1]/5 to-[#a855f7]/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+            
+            <div className="relative w-32 h-32 flex items-center justify-center mb-3">
+               {/* Glowing Background Blur */}
+               <div className="absolute inset-0 bg-[#a855f7]/20 blur-[20px] rounded-full" />
+               
+               {/* SVG Gauge */}
+               <svg className="w-full h-full transform -rotate-90 relative z-10" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="rgba(255,255,255,0.05)" strokeWidth="6" fill="none" />
+                  <circle 
+                    cx="50" cy="50" r="40" 
+                    stroke="url(#gradient)" 
+                    strokeWidth="6" 
+                    fill="none" 
+                    strokeDasharray="251.2" 
+                    strokeDashoffset={251.2 - (251.2 * BuilderScore) / 100} 
+                    strokeLinecap="round"
+                    className="transition-all duration-1000 ease-out"
+                  />
+                  <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#6366f1" />
+                      <stop offset="100%" stopColor="#a855f7" />
+                    </linearGradient>
+                  </defs>
+               </svg>
+               <div className="absolute flex flex-col items-center justify-center">
+                 <span className="font-display font-black text-2xl text-white tracking-tighter">{BuilderScore}</span>
+                 <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">Score</span>
+               </div>
+            </div>
+            
+            <p className="text-zinc-400 text-sm text-center relative z-10">Top 15% of builders this week.</p>
+          </div>
+        </section>
+
+        {/* Discovery Section */}
+        <section>
+           <div className="flex items-center gap-2 mb-3">
+             <Globe size={16} strokeWidth={1.5} className="text-slate-400" />
+             <h3 className="font-display font-semibold text-white tracking-tight">Discovery</h3>
            </div>
-           <form className="rp-search-form" onSubmit={handleCommSearch}>
-              <div className="rp-search-input-wrapper">
-                 <Search size={14} className="rp-search-icon" />
-                 <input 
-                   type="text" 
-                   placeholder="Find a community..." 
-                   className="rp-search-input"
-                   value={commSearch}
-                   onChange={(e) => setCommSearch(e.target.value)}
-                 />
-                 <button type="submit" className="rp-search-btn">
-                   <ArrowRight size={14} />
-                 </button>
-              </div>
+           <form onSubmit={handleCommSearch} className="relative">
+              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" strokeWidth={1.5} />
+              <input 
+                type="text" 
+                placeholder="Find a community..." 
+                className="w-full bg-[#050505] border border-white/5 rounded-xl py-2.5 pl-9 pr-10 text-sm text-slate-300 focus:outline-none focus:border-[#6366f1]/50 transition-colors placeholder:text-zinc-600"
+                value={commSearch}
+                onChange={(e) => setCommSearch(e.target.value)}
+              />
+              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-white transition-colors">
+                <ArrowRight size={14} strokeWidth={1.5} />
+              </button>
            </form>
         </section>
 
         {/* Notifications Section */}
-        <section className="rp-section">
-          <div className="rp-section-header">
-            <h3 className="rp-section-title"><Bell size={18} /> Notifications</h3>
-            {unreadCount > 0 && <span className="rp-badge">{unreadCount}</span>}
+        <section>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <Bell size={16} strokeWidth={1.5} className="text-slate-400" />
+              <h3 className="font-display font-semibold text-white tracking-tight">Notifications</h3>
+            </div>
+            {unreadCount > 0 && <span className="bg-[#6366f1]/20 text-[#a855f7] text-[10px] font-bold px-1.5 py-0.5 rounded-md">{unreadCount}</span>}
           </div>
-          <div className="rp-list">
+          <div className="space-y-2">
             {notifications.length > 0 ? (
               notifications.slice(0, 3).map((n) => (
-                <div key={n.id} className={`rp-item ${!n.read ? 'unread' : ''}`} onClick={() => navigate('/notifications')}>
-                  <div className="rp-item-icon">
-                    {n.type === 'collaboration' ? <UserPlus size={14} /> : <Globe size={14} />}
+                <div key={n.id} className="p-3 bg-[#050505] border border-white/5 rounded-xl cursor-pointer hover:border-white/10 transition-colors flex gap-3" onClick={() => navigate('/notifications')}>
+                  <div className="mt-0.5 text-zinc-500">
+                    {n.type === 'collaboration' ? <UserPlus size={14} strokeWidth={1.5} /> : <Globe size={14} strokeWidth={1.5} />}
                   </div>
-                  <div className="rp-item-content">
-                    <p className="rp-item-text">{n.text}</p>
-                    <span className="rp-item-time">{n.time}</span>
+                  <div>
+                    <p className="text-sm text-slate-300 line-clamp-2 leading-snug">{n.text}</p>
+                    <span className="text-[10px] text-zinc-600 mt-1 block">{n.time}</span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="rp-empty-small">No recent notifications</div>
+              <div className="text-sm text-zinc-600 py-2">No recent notifications</div>
             )}
-            <button className="rp-view-all" onClick={() => navigate('/notifications')}>View all notifications</button>
           </div>
         </section>
 
-        {/* Active Projects Section */}
-        <section className="rp-section">
-          <div className="rp-section-header">
-            <h3 className="rp-section-title"><Briefcase size={18} /> Active Projects</h3>
-          </div>
-          <div className="rp-list">
-            {activeProjects.map((p) => (
-              <div key={p.id} className="rp-project-card" onClick={() => navigate(`/project/${p.id}`)}>
-                <div className="rp-project-info">
-                  <p className="rp-project-name">{p.title}</p>
-                  <span className={`rp-project-stage stage-${p.stage.toLowerCase()}`}>{p.stage}</span>
-                </div>
-                <ArrowRight size={14} />
-              </div>
-            ))}
-            {activeProjects.length === 0 && <div className="rp-empty-small">No active projects</div>}
-            <button className="rp-view-all" onClick={() => navigate(user ? `/profile/${user.id}` : '/login')}>Manage all projects</button>
+        {/* Quick Actions */}
+        <section>
+          <h3 className="font-display font-semibold text-white tracking-tight mb-3">Quick Actions</h3>
+          <div className="space-y-2">
+            <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-medium text-sm hover:opacity-90 transition-opacity" onClick={() => navigate('/upload')}>
+              <Plus size={16} strokeWidth={1.5} /> Create Project
+            </button>
+            <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/10 text-slate-300 hover:text-white hover:bg-white/5 transition-colors font-medium text-sm" onClick={() => navigate('/communities')}>
+              <Globe size={16} strokeWidth={1.5} /> Join Community
+            </button>
           </div>
         </section>
 
-        {/* Join Requests Section */}
-        <section className="rp-section">
-          <div className="rp-section-header">
-            <h3 className="rp-section-title"><UserPlus size={18} /> Join Requests</h3>
-          </div>
-          <div className="rp-empty-state" style={{ padding: '20px 12px' }}>
-            <p style={{ fontSize: '0.8rem' }}>No pending requests.</p>
-          </div>
-        </section>
-
-        {/* Quick Actions Section */}
-        <div className="rp-quick-actions">
-          <p className="rp-quick-label">Quick Actions</p>
-          <div className="rp-action-grid">
-            <button className="btn btn-primary rp-action-btn" onClick={() => navigate('/upload')}>
-              <Plus size={16} /> Create Project
-            </button>
-            <button className="btn btn-secondary rp-action-btn" onClick={() => navigate('/communities')}>
-              <Globe size={16} /> Join Community
-            </button>
-            <button className="btn btn-tertiary rp-action-btn" onClick={() => navigate('/explore')} style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', color: 'var(--text-primary)' }}>
-              <Search size={16} /> Find Collaborators
-            </button>
-          </div>
-        </div>
       </div>
     </aside>
   );

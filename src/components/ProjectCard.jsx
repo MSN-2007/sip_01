@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Share2, X, Eye, Activity } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import ShareModal from './ShareModal';
 
@@ -49,91 +50,101 @@ export default function ProjectCard({ project }) {
 
   return (
     <>
-      <Link 
-        to={`/project/${project.id}`} 
-        className="group flex flex-col bg-[#161618] rounded-[12px] border border-white/5 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(139,92,246,0.15)] hover:border-violet-500/30"
+      <motion.div
+        whileHover={{ scale: 1.03, boxShadow: "0px 0px 20px rgba(99, 102, 241, 0.15)" }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        className="group block bg-[#0F0F11] rounded-2xl border border-white/[0.08] p-5 cursor-pointer relative overflow-hidden"
       >
+        <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/5 to-[#a855f7]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
-        {/* TOP: Image & Actions */}
-        <div className="relative h-40 w-full overflow-hidden">
-           <img 
-             src={cardImage} 
-             alt={project.title} 
-             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-             loading="lazy" 
-           />
-           {/* Gradient Overlay */}
-           <div className="absolute inset-0 bg-gradient-to-t from-[#161618] via-transparent to-black/30" />
-           
-           {/* Actions overlaying top right */}
-           <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              {isOwner && (
-                <button onClick={handleDelete} className="p-1.5 rounded-md bg-black/50 backdrop-blur text-slate-300 hover:text-rose-500 hover:bg-rose-500/20 transition-colors" title="Delete Project">
-                  <X size={16} />
-                </button>
-              )}
-              <button onClick={handleShare} className="p-1.5 rounded-md bg-black/50 backdrop-blur text-slate-300 hover:text-white hover:bg-white/10 transition-colors" title="Share Project">
-                <Share2 size={16} />
-              </button>
-           </div>
-        </div>
-
-        {/* CONTENT */}
-        <div className="p-5 flex flex-col flex-1">
-           {/* Ghost Tag */}
-           <div className="flex items-center justify-between mb-3">
-             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-slate-700 bg-black/20 text-slate-300 text-[10px] font-bold uppercase tracking-wider">
-               <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-violet-500" />
-               {project.stage}
+        <Link to={`/project/${project.id}`} className="relative z-10 flex flex-col h-full">
+          
+          {/* Top Row: Floating Content Layout (Image + Title) */}
+          <div className="flex items-start gap-4 mb-4">
+             <div className="w-16 h-16 shrink-0 rounded-xl overflow-hidden border border-white/10 relative shadow-md">
+               <img 
+                 src={cardImage} 
+                 alt={project.title} 
+                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                 loading="lazy" 
+               />
+               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
              </div>
              
-             {project.domainTags?.[0] && (
-               <span className="text-xs font-medium text-slate-500 truncate max-w-[120px]">{project.domainTags[0]}</span>
-             )}
-           </div>
+             <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <h1 className="font-display font-black tracking-[-0.05em] text-white text-[1.15rem] leading-tight line-clamp-2">
+                    {project.title}
+                  </h1>
+                  
+                  {/* Actions overlaying top right */}
+                  <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                     {isOwner && (
+                       <button onClick={handleDelete} className="p-1 rounded bg-black/40 text-slate-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors" title="Delete Project">
+                         <X size={14} strokeWidth={1.5} />
+                       </button>
+                     )}
+                     <motion.button 
+                       whileTap={{ scale: [0.9, 1.1, 1] }}
+                       transition={{ duration: 0.3 }}
+                       onClick={handleShare} 
+                       className="p-1 rounded bg-black/40 text-slate-400 hover:text-white hover:bg-white/10 transition-colors" title="Share Project">
+                       <Share2 size={14} strokeWidth={1.5} />
+                     </motion.button>
+                  </div>
+                </div>
 
-           {/* Title as H1 */}
-           <h1 className="font-display font-semibold tracking-[-0.02em] text-white text-lg leading-tight mb-2 line-clamp-2">
-             {project.title}
-           </h1>
-           
-           <p className="text-sm text-slate-400 line-clamp-2 mb-4 flex-1">
-             {project.shortDescription || project.problemTitle}
-           </p>
+                <div className="flex items-center gap-2 mt-1.5">
+                  <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-white/10 bg-black/20 text-slate-300 text-[9px] font-bold uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-gradient-to-r from-[#6366f1] to-[#a855f7]" />
+                    {project.stage}
+                  </div>
+                  {project.domainTags?.[0] && (
+                    <span className="text-[10px] font-medium text-zinc-500 truncate">{project.domainTags[0]}</span>
+                  )}
+                </div>
+             </div>
+          </div>
 
-           {/* Zeigarnik Effect Progress Bar */}
-           <div className="mb-4">
-             <div className="flex justify-between text-xs mb-1.5">
-               <span className="text-slate-400 flex items-center gap-1"><Activity size={12}/> {progress}% to {milestone}</span>
-               <span className="text-violet-400 font-medium">Active</span>
-             </div>
-             <div className="w-full h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/5">
-               <div className="h-full bg-gradient-to-r from-violet-600 to-fuchsia-500 rounded-full" style={{ width: `${progress}%` }} />
-             </div>
-           </div>
+          {/* Description */}
+          <p className="text-[0.85rem] text-slate-400 line-clamp-2 mb-5 flex-1">
+            {project.shortDescription || project.problemTitle}
+          </p>
 
-           {/* FOOTER: Metadata */}
-           <div className="flex items-center justify-between pt-3 border-t border-white/5 text-slate-500 text-xs font-medium">
-             <div className="flex items-center gap-3">
-               <button 
-                 onClick={handleLike} 
-                 className={`flex items-center gap-1.5 transition-colors ${isLiked ? 'text-rose-500' : 'hover:text-rose-400'}`}
-               >
-                 <Heart size={14} className={isLiked ? 'fill-current' : ''} /> {localLikes}
-               </button>
-               <div className="flex items-center gap-1.5">
-                 <Eye size={14} /> {project.views}
-               </div>
-             </div>
-             
-             {/* Author Avatar (Placeholder since no author data in basic list) */}
-             <div className="flex items-center gap-1.5">
-               <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(project.userId)}&background=2dd4bf&color=fff`} alt="Creator" className="w-5 h-5 rounded-full border border-white/10" />
-             </div>
-           </div>
-        </div>
+          {/* Zeigarnik Effect Progress Bar */}
+          <div className="mb-4">
+            <div className="flex justify-between text-[11px] mb-1.5">
+              <span className="text-zinc-500 flex items-center gap-1"><Activity size={12} strokeWidth={1.5}/> {progress}% to {milestone}</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7] font-semibold">Building</span>
+            </div>
+            <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-full" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
 
-      </Link>
+          {/* FOOTER: Metadata */}
+          <div className="flex items-center justify-between pt-3 border-t border-white/5 text-zinc-500 text-xs font-medium">
+            <div className="flex items-center gap-4">
+              <motion.button 
+                whileTap={{ scale: [0.9, 1.1, 1] }}
+                transition={{ duration: 0.3 }}
+                onClick={handleLike} 
+                className={`flex items-center gap-1.5 transition-colors ${isLiked ? 'text-rose-500' : 'hover:text-rose-400'}`}
+              >
+                <Heart size={14} strokeWidth={1.5} className={isLiked ? 'fill-current' : ''} /> {localLikes}
+              </motion.button>
+              <div className="flex items-center gap-1.5">
+                <Eye size={14} strokeWidth={1.5} /> {project.views}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-1.5">
+              <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(project.userId)}&background=0F0F11&color=fff`} alt="Creator" className="w-5 h-5 rounded-full border border-white/10" />
+            </div>
+          </div>
+          
+        </Link>
+      </motion.div>
 
       <ShareModal 
         isOpen={isShareOpen}

@@ -33,17 +33,17 @@ export default function Sidebar({ isSidebarOpen, onNavigate }) {
   return (
     <aside className={`
       fixed top-0 left-0 h-full z-50
-      bg-[#161618]/60 backdrop-blur-xl border-r border-white/5
+      bg-[#0F0F11]/60 backdrop-blur-[12px] border-r border-white/[0.08]
       transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
       flex flex-col
       ${isSidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full lg:translate-x-0 lg:w-[80px] hover:w-[260px] group'}
     `}>
       <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden no-scrollbar pb-6">
         <Link to="/" className="flex items-center h-[80px] px-6 shrink-0 text-white group-hover:px-6 lg:px-0 lg:justify-center group-hover:justify-start">
-          <div className="w-[32px] h-[32px] rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-600 flex items-center justify-center font-display font-bold text-sm shadow-[0_0_15px_rgba(139,92,246,0.3)] shrink-0">
+          <div className="w-[32px] h-[32px] rounded-lg bg-gradient-to-br from-[#6366f1] to-[#a855f7] flex items-center justify-center font-display font-bold text-sm shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
             AD
           </div>
-          <span className={`ml-4 font-display font-semibold tracking-[-0.02em] text-lg whitespace-nowrap transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 lg:hidden group-hover:opacity-100 group-hover:block'}`}>
+          <span className={`ml-4 font-display font-black tracking-[-0.05em] text-lg whitespace-nowrap transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 lg:hidden group-hover:opacity-100 group-hover:block'}`}>
             ProjectSpace
           </span>
         </Link>
@@ -64,13 +64,13 @@ export default function Sidebar({ isSidebarOpen, onNavigate }) {
                 title={item.label}
               >
                 <div className={`flex items-center justify-center ${isSidebarOpen ? 'w-[20px]' : 'w-full lg:w-[20px] group-hover:w-[20px]'} shrink-0`}>
-                  <Icon size={20} className={active ? 'text-violet-400 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]' : ''} />
+                  <Icon size={20} strokeWidth={1.5} className={active ? 'text-violet-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]' : ''} />
                 </div>
                 <span className={`ml-4 whitespace-nowrap font-medium text-sm transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 lg:hidden group-hover:opacity-100 group-hover:block'}`}>
                   {item.label}
                 </span>
                 {active && (
-                  <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-violet-500 rounded-r-full transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 lg:opacity-100'}`} />
+                  <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-gradient-to-b from-[#6366f1] to-[#a855f7] rounded-r-full transition-all duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 lg:opacity-100'}`} />
                 )}
               </Link>
             );
@@ -93,7 +93,7 @@ export default function Sidebar({ isSidebarOpen, onNavigate }) {
                 title={item.label}
               >
                 <div className={`flex items-center justify-center ${isSidebarOpen ? 'w-[20px]' : 'w-full lg:w-[20px] group-hover:w-[20px]'} shrink-0`}>
-                  <Icon size={20} />
+                  <Icon size={20} strokeWidth={1.5} />
                 </div>
                 <span className={`ml-4 whitespace-nowrap font-medium text-sm transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 lg:hidden group-hover:opacity-100 group-hover:block'}`}>
                   {item.label}

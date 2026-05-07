@@ -2,16 +2,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @theme {
-  --color-bg-primary: #0B0B0C;
-  --color-bg-surface: #161618;
-  --color-accent-violet: #8B5CF6;
-  --font-display: 'Plus Jakarta Sans', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --color-bg-primary: #050505;
+  --color-bg-surface: #0F0F11;
+  --font-display: 'Inter', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
 }
 
 @layer base {
   body {
-    @apply bg-bg-primary text-slate-400 font-body;
+    @apply bg-bg-primary text-slate-400 font-body leading-[1.6];
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-white font-black tracking-[-0.05em];
   }
 }
 

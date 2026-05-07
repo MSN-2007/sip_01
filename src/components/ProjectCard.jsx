@@ -51,9 +51,17 @@ export default function ProjectCard({ project }) {
   return (
     <>
       <motion.div
-        whileHover={{ scale: 1.03, boxShadow: "0px 0px 20px rgba(99, 102, 241, 0.15)" }}
+        whileHover={{ scale: 1.03 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="group block bg-[#0F0F11] rounded-2xl border border-white/[0.08] p-5 cursor-pointer relative overflow-hidden"
+        className="group block rounded-2xl p-5 cursor-pointer relative overflow-hidden"
+        style={{
+          background: '#0D0D0F',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderTop: '1px solid rgba(255,255,255,0.14)',
+          transition: 'box-shadow 0.4s cubic-bezier(0.16,1,0.3,1)',
+        }}
+        onHoverStart={e => e.target.style && (e.target.style.boxShadow = '0 0 20px rgba(99,102,241,0.3)')}
+        onHoverEnd={e => e.target.style && (e.target.style.boxShadow = 'none')}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/5 to-[#a855f7]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
@@ -114,8 +122,8 @@ export default function ProjectCard({ project }) {
           {/* Zeigarnik Effect Progress Bar */}
           <div className="mb-4">
             <div className="flex justify-between text-[11px] mb-1.5">
-              <span className="text-zinc-500 flex items-center gap-1"><Activity size={12} strokeWidth={1.5}/> {progress}% to {milestone}</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7] font-semibold">Building</span>
+              <span className="data-label text-zinc-500 flex items-center gap-1"><Activity size={12} strokeWidth={1.5}/> {progress}% to {milestone}</span>
+              <span className="data-label gradient-text font-semibold">Building</span>
             </div>
             <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
               <div className="h-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-full" style={{ width: `${progress}%` }} />
@@ -129,11 +137,11 @@ export default function ProjectCard({ project }) {
                 whileTap={{ scale: [0.9, 1.1, 1] }}
                 transition={{ duration: 0.3 }}
                 onClick={handleLike} 
-                className={`flex items-center gap-1.5 transition-colors ${isLiked ? 'text-rose-500' : 'hover:text-rose-400'}`}
+                className={`stat-value flex items-center gap-1.5 transition-colors ${isLiked ? 'text-rose-500' : 'hover:text-rose-400'}`}
               >
                 <Heart size={14} strokeWidth={1.5} className={isLiked ? 'fill-current' : ''} /> {localLikes}
               </motion.button>
-              <div className="flex items-center gap-1.5">
+              <div className="stat-value flex items-center gap-1.5">
                 <Eye size={14} strokeWidth={1.5} /> {project.views}
               </div>
             </div>

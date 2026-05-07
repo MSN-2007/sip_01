@@ -11,7 +11,7 @@ export default function MainLayout({ children, rightPanelContent }) {
     <div className="min-h-screen bg-[#050505] text-slate-400 font-body flex w-full">
       
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 w-full h-[60px] bg-[#0F0F11]/80 backdrop-blur-[12px] border-b border-white/[0.08] flex items-center justify-between px-4 z-50">
+      <header className="lg:hidden fixed top-0 w-full h-[60px] border-b border-t-transparent flex items-center justify-between px-4 z-50" style={{ background: 'rgba(13,13,15,0.8)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
          <button className="p-2 text-slate-300 hover:text-white" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
             {isSidebarOpen ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
          </button>
@@ -23,7 +23,10 @@ export default function MainLayout({ children, rightPanelContent }) {
 
       {/* Desktop Right Panel Toggle */}
       <button 
-        className={`hidden lg:flex fixed top-6 right-6 p-3 rounded-full bg-[#0F0F11] border border-white/[0.08] text-slate-300 hover:text-white hover:border-[#a855f7]/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.2)] transition-all z-40 ${isRightOpen ? 'hidden' : ''}`}
+        className={`hidden lg:flex fixed top-6 right-6 p-3 rounded-full text-slate-300 hover:text-white transition-all duration-300 z-40 ${isRightOpen ? '!hidden' : ''}`}
+        style={{ background: '#0D0D0F', border: '1px solid rgba(255,255,255,0.08)' }}
+        onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(99,102,241,0.3)'}
+        onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
         onClick={() => setIsRightOpen(true)}
       >
         <Bell size={20} strokeWidth={1.5} />

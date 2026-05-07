@@ -31,16 +31,18 @@ export default function Sidebar({ isSidebarOpen, onNavigate }) {
   ];
 
   return (
-    <aside className={`
-      fixed top-0 left-0 h-full z-50
-      bg-[#0F0F11]/60 backdrop-blur-[12px] border-r border-white/[0.08]
-      transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]
-      flex flex-col
-      ${isSidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full lg:translate-x-0 lg:w-[80px] hover:w-[260px] group'}
-    `}>
+    <aside
+      className={`fixed top-0 left-0 h-full z-50 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col ${isSidebarOpen ? 'translate-x-0 w-[260px]' : '-translate-x-full lg:translate-x-0 lg:w-[80px] hover:w-[260px] group'}`}
+      style={{
+        background: 'rgba(13, 13, 15, 0.75)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderRight: '1px solid rgba(255,255,255,0.08)',
+      }}
+    >
       <div className="flex-1 flex flex-col overflow-y-auto overflow-x-hidden no-scrollbar pb-6">
         <Link to="/" className="flex items-center h-[80px] px-6 shrink-0 text-white group-hover:px-6 lg:px-0 lg:justify-center group-hover:justify-start">
-          <div className="w-[32px] h-[32px] rounded-lg bg-gradient-to-br from-[#6366f1] to-[#a855f7] flex items-center justify-center font-display font-bold text-sm shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0">
+          <div className="w-[32px] h-[32px] rounded-lg flex items-center justify-center font-display font-bold text-sm shrink-0" style={{ background: 'linear-gradient(135deg,#6366f1,#a855f7)', boxShadow: '0 0 20px rgba(99,102,241,0.3)' }}>
             AD
           </div>
           <span className={`ml-4 font-display font-black tracking-[-0.05em] text-lg whitespace-nowrap transition-opacity duration-300 ${isSidebarOpen ? 'opacity-100' : 'opacity-0 lg:hidden group-hover:opacity-100 group-hover:block'}`}>
@@ -58,8 +60,9 @@ export default function Sidebar({ isSidebarOpen, onNavigate }) {
                 to={item.to}
                 className={`
                   flex items-center h-[44px] px-3 rounded-xl transition-all duration-200 group/item relative
-                  ${active ? 'bg-white/10 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}
+                  ${active ? 'bg-white/8 text-white' : 'text-slate-400 hover:bg-white/5 hover:text-white'}
                 `}
+                style={active ? { boxShadow: '0 0 20px rgba(99,102,241,0.2)', background: 'rgba(99,102,241,0.08)' } : {}}
                 onClick={handleNavigate}
                 title={item.label}
               >

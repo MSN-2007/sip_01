@@ -1,34 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Heart, Zap, Layers, ArrowRight, Share2, Code2, Cpu, Globe, Sprout, HeartPulse, X } from 'lucide-react';
+import { Heart, Share2, X, Eye, Activity } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import ShareModal from './ShareModal';
-import './ProjectCard.css';
-
-const stageConfig = {
-  Idea: { cls: 'stage-idea', icon: Layers },
-  Prototype: { cls: 'stage-prototype', icon: Zap },
-  Production: { cls: 'stage-production', icon: ArrowRight },
-};
-
-const domainIcons = {
-  'iot': Cpu,
-  'agriculture': Sprout,
-  'health': HeartPulse,
-  'education': Globe,
-  'tech': Code2,
-};
-
-// Fallback high-quality images based on domain
-const domainImages = {
-  tech: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=800',
-  agriculture: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?auto=format&fit=crop&q=80&w=800',
-  health: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&q=80&w=800',
-  education: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&q=80&w=800',
-  robotics: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=800',
-  ai: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?auto=format&fit=crop&q=80&w=800',
-  default: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800'
-};
 
 export default function ProjectCard({ project }) {
   const navigate = useNavigate();
@@ -67,67 +41,95 @@ export default function ProjectCard({ project }) {
     }
   };
 
-  const stage = stageConfig[project.stage] || stageConfig.Idea;
-  const mainDomain = project.domainTags?.[0] || 'Tech';
+  const cardImage = project.image || 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800';
   
-  const getDomainKey = (domain) => {
-    const d = domain?.toLowerCase();
-    if (d.includes('agri')) return 'agriculture';
-    if (d.includes('health') || d.includes('med')) return 'health';
-    if (d.includes('edu')) return 'education';
-    if (d.includes('robot')) return 'robotics';
-    if (d.includes('ai') || d.includes('machine')) return 'ai';
-    if (d.includes('iot') || d.includes('internet')) return 'iot';
-    return 'tech';
-  };
-
-  const domainKey = getDomainKey(mainDomain);
-  const DomainIcon = domainIcons[domainKey] || domainIcons.tech;
-  const cardImage = project.image || domainImages[domainKey] || domainImages.default;
+  // Fake progress calculation for Zeigarnik Effect
+  const progress = Math.floor(project.id.length * 3 + 40) % 55 + 40; 
+  const milestone = project.stage === 'Idea' ? 'MVP' : project.stage === 'Prototype' ? 'Beta' : 'v2.0';
 
   return (
     <>
-      <Link to={`/project/${project.id}`} className="project-card-v2 glass-card">
+      <Link 
+        to={`/project/${project.id}`} 
+        className="group flex flex-col bg-[#161618] rounded-[12px] border border-white/5 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(139,92,246,0.15)] hover:border-violet-500/30"
+      >
         
-        {/* TOP: Tags & Meta */}
-        <div className="pc2-header">
-           <div className="pc2-tags">
-              <span className={`pc2-domain-tag domain-${domainKey}`}>
-                <DomainIcon size={12} /> {mainDomain}
-              </span>
-           </div>
+        {/* TOP: Image & Actions */}
+        <div className="relative h-40 w-full overflow-hidden">
+           <img 
+             src={cardImage} 
+             alt={project.title} 
+             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+             loading="lazy" 
+           />
+           {/* Gradient Overlay */}
+           <div className="absolute inset-0 bg-gradient-to-t from-[#161618] via-transparent to-black/30" />
            
            {/* Actions overlaying top right */}
-           <div className="pc2-actions">
+           <div className="absolute top-3 right-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               {isOwner && (
-                <button onClick={handleDelete} className="pc2-icon-btn delete-btn" title="Delete Project">
+                <button onClick={handleDelete} className="p-1.5 rounded-md bg-black/50 backdrop-blur text-slate-300 hover:text-rose-500 hover:bg-rose-500/20 transition-colors" title="Delete Project">
                   <X size={16} />
                 </button>
               )}
-              <button onClick={handleLike} className={`pc2-icon-btn ${isLiked ? 'liked' : ''}`}>
-                <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} />
-              </button>
-              <button onClick={handleShare} className="pc2-icon-btn" title="Share Project">
+              <button onClick={handleShare} className="p-1.5 rounded-md bg-black/50 backdrop-blur text-slate-300 hover:text-white hover:bg-white/10 transition-colors" title="Share Project">
                 <Share2 size={16} />
               </button>
            </div>
         </div>
 
-        {/* MIDDLE: Image */}
-        <div className="pc2-image-container">
-           <img src={cardImage} alt={project.title} className="pc2-image" loading="lazy" />
-        </div>
+        {/* CONTENT */}
+        <div className="p-5 flex flex-col flex-1">
+           {/* Ghost Tag */}
+           <div className="flex items-center justify-between mb-3">
+             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-slate-700 bg-black/20 text-slate-300 text-[10px] font-bold uppercase tracking-wider">
+               <span className="w-1.5 h-1.5 rounded-full animate-pulse bg-violet-500" />
+               {project.stage}
+             </div>
+             
+             {project.domainTags?.[0] && (
+               <span className="text-xs font-medium text-slate-500 truncate max-w-[120px]">{project.domainTags[0]}</span>
+             )}
+           </div>
 
-        {/* BOTTOM: Info */}
-        <div className="pc2-footer">
-           <h3 className="pc2-title" title={project.title}>{project.title}</h3>
-           <div className="pc2-bottom-row">
-              <div className={`pc2-stage-pill ${stage.cls}`}>
-                <stage.icon size={12} /> {project.stage}
-              </div>
-              <div className="pc2-meta-likes">
-                <Heart size={12} fill="currentColor" /> {localLikes}
-              </div>
+           {/* Title as H1 */}
+           <h1 className="font-display font-semibold tracking-[-0.02em] text-white text-lg leading-tight mb-2 line-clamp-2">
+             {project.title}
+           </h1>
+           
+           <p className="text-sm text-slate-400 line-clamp-2 mb-4 flex-1">
+             {project.shortDescription || project.problemTitle}
+           </p>
+
+           {/* Zeigarnik Effect Progress Bar */}
+           <div className="mb-4">
+             <div className="flex justify-between text-xs mb-1.5">
+               <span className="text-slate-400 flex items-center gap-1"><Activity size={12}/> {progress}% to {milestone}</span>
+               <span className="text-violet-400 font-medium">Active</span>
+             </div>
+             <div className="w-full h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/5">
+               <div className="h-full bg-gradient-to-r from-violet-600 to-fuchsia-500 rounded-full" style={{ width: `${progress}%` }} />
+             </div>
+           </div>
+
+           {/* FOOTER: Metadata */}
+           <div className="flex items-center justify-between pt-3 border-t border-white/5 text-slate-500 text-xs font-medium">
+             <div className="flex items-center gap-3">
+               <button 
+                 onClick={handleLike} 
+                 className={`flex items-center gap-1.5 transition-colors ${isLiked ? 'text-rose-500' : 'hover:text-rose-400'}`}
+               >
+                 <Heart size={14} className={isLiked ? 'fill-current' : ''} /> {localLikes}
+               </button>
+               <div className="flex items-center gap-1.5">
+                 <Eye size={14} /> {project.views}
+               </div>
+             </div>
+             
+             {/* Author Avatar (Placeholder since no author data in basic list) */}
+             <div className="flex items-center gap-1.5">
+               <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(project.userId)}&background=2dd4bf&color=fff`} alt="Creator" className="w-5 h-5 rounded-full border border-white/10" />
+             </div>
            </div>
         </div>
 

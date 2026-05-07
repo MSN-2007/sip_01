@@ -46,10 +46,10 @@ export default function MainLayout({ children, rightPanelContent }) {
       {/* Sidebar - collapsible dock */}
       <Sidebar isSidebarOpen={isSidebarOpen} onNavigate={() => setIsSidebarOpen(false)} />
       
-      {/* Main Content Area: 12-column grid */}
+      {/* Main Content — Fix #8: Breathable Layout, padding increased 50% */}
       <main className="flex-1 lg:ml-[80px] hover:lg:ml-[260px] transition-all duration-300 min-h-screen">
-        <div className="pt-[80px] lg:pt-0 p-8">
-          <div className="grid grid-cols-12 gap-8 max-w-[1600px] mx-auto">
+        <div className="pt-[80px] lg:pt-0 p-12">
+          <div className="grid grid-cols-12 gap-12 max-w-[1600px] mx-auto">
             <div className="col-span-12">
               {children}
             </div>

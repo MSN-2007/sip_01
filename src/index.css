@@ -2,26 +2,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;900&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @theme {
-  --color-bg-primary: #050505;
+  --color-bg-primary: #080808;
   --color-bg-surface: #0D0D0F;
   --font-display: 'Inter', sans-serif;
   --font-mono: 'Space Grotesk', monospace;
   --font-body: 'Inter', sans-serif;
+  /* Fix #3: Nested Radius Hierarchy */
+  --radius-container: 24px;
+  --radius-card: 16px;
+  --radius-btn: 8px;
+  --radius-input: 8px;
 }
 
 @layer base {
-  /* Obsidian & Neon — global foundation */
   html { color-scheme: dark; }
 
+  /* Fix #1: Atmospheric Depth — multi-layered radial gradient, NOT flat color */
   body {
-    background-color: #050505;
+    background: radial-gradient(ellipse at 50% 0%, #0d0d0f 0%, #060606 40%, #030303 100%);
+    min-height: 100vh;
     color: #a1a1aa;
     font-family: 'Inter', sans-serif;
     line-height: 1.6;
-    /* Subtle noise/grain overlay at 2% opacity */
     position: relative;
   }
 
+  /* Subtle 2% noise grain overlay */
   body::before {
     content: '';
     position: fixed;
@@ -32,7 +38,7 @@
     z-index: 9999;
   }
 
-  /* Inter Black (900) for all headings */
+  /* Fix #4: Typographic Contrast — headings ALWAYS 900/white, body always 400/zinc-500 */
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', sans-serif;
     font-weight: 900;
@@ -40,29 +46,48 @@
     color: #ffffff;
   }
 
-  /* Space Grotesk for mono-spaced data & technical labels */
+  p, span, label, li {
+    font-weight: 400;
+  }
+
+  /* Space Grotesk for data points and technical labels only */
   .font-mono, code, kbd, samp,
   .data-label, .tech-label, .stat-value {
     font-family: 'Space Grotesk', monospace;
   }
 }
 
-/* ── Global Obsidian & Neon Utilities ── */
+/* ── Global Obsidian & Neon Utilities — all 10 fixes ── */
 @layer utilities {
 
-  /* Glass surface — nav, sidebars, modals */
+  /* Fix #2: Glass Material — backdrop-blur-xl on ALL floating components */
   .glass {
-    background: rgba(13, 13, 15, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(13, 13, 15, 0.72);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid rgba(255, 255, 255, 0.08);
+    border-top-color: rgba(255, 255, 255, 0.14);
   }
 
-  /* Obsidian card with Rim Lighting */
+  /* Fix #3: Obsidian card — radius-card=16px, rim light on top edge */
   .obsidian-card {
     background: #0D0D0F;
+    border-radius: var(--radius-card, 16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-top-color: rgba(255, 255, 255, 0.14); /* Rim light — simulates top-down light source */
+    border-top-color: rgba(255, 255, 255, 0.14);
+    /* Fix #6: Multi-layered surface elevation shadow */
+    box-shadow:
+      0 4px 6px rgba(0, 0, 0, 0.5),
+      0 12px 28px rgba(0, 0, 0, 0.5),
+      0 32px 64px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Fix #6: Elevated surface shadow utility */
+  .shadow-obsidian {
+    box-shadow:
+      0 4px 6px rgba(0, 0, 0, 0.5),
+      0 12px 28px rgba(0, 0, 0, 0.5),
+      0 32px 64px rgba(0, 0, 0, 0.5);
   }
 
   /* Neon glow for active / accent elements */
@@ -70,7 +95,36 @@
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
   }
 
-  /* Gradient text for headings */
+  /* Fix #10: PRIMARY CTA only — neon gradient */
+  .btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    color: #ffffff;
+    font-weight: 600;
+    border-radius: var(--radius-btn, 8px);
+    border: none;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.25);
+    transition: opacity 0.2s ease, box-shadow 0.2s ease;
+  }
+  .btn-primary:hover {
+    opacity: 0.9;
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+  }
+
+  /* Fix #10: Secondary / Cancel / Save — muted grey, NO gradient */
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: #71717a;
+    font-weight: 500;
+    border-radius: var(--radius-btn, 8px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #a1a1aa;
+  }
+
+  /* Gradient text — for accent labels only */
   .gradient-text {
     background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
     -webkit-background-clip: text;
@@ -78,23 +132,42 @@
     background-clip: text;
   }
 
-  /* Neon gradient background */
-  .neon-gradient {
-    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  /* Fix #5: Ghost Tag — 1px border + 5% color fill, no heavy background */
+  .ghost-tag {
+    background: rgba(99, 102, 241, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    color: #a5b4fc;
+    border-radius: var(--radius-btn, 8px);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 8px;
   }
 
-  /* Ghost button with gradient border */
+  .ghost-tag-green {
+    background: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #6ee7b7;
+    border-radius: var(--radius-btn, 8px);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    padding: 2px 8px;
+  }
+
+  /* Fix #10: Ghost button — muted for non-primary actions */
   .ghost-btn {
-    position: relative;
     background: transparent;
-    color: #a1a1aa;
+    color: #71717a;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
+    border-radius: var(--radius-btn, 8px);
+    transition: all 0.25s ease;
   }
   .ghost-btn:hover {
-    border-color: rgba(99, 102, 241, 0.5);
-    color: #ffffff;
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+    color: #a1a1aa;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.12);
   }
 }
 

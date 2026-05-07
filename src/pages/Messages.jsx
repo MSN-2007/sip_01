@@ -2,63 +2,61 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send, Search, MessageSquare, MoreVertical, Paperclip, Smile } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { subscribeToDirectMessages, sendDirectMessage } from '../services/db';
 import './Messages.css';
 
 export default function Messages() {
   const navigate = useNavigate();
   const { users, user: me, authLoading } = useApp();
   const contacts = users.filter(u => u.id !== (me?.id || undefined));
-  const [selected, setSelected] = useState(contacts[0]);
+  const [selected, setSelected] = useState(contacts[0] || null);
   const [input, setInput] = useState('');
+  const [messages, setMessages] = useState([]);
+  const [isSending, setIsSending] = useState(false);
   const chatEndRef = useRef(null);
   
-  const [msgHistory, setMsgHistory] = useState({
-    u2: [
-      { id: 1, from: 'u2', text: 'Hey! Loved the SoilSense project. Would love to collaborate on the PCB hardware side.', time: '10:22 AM' },
-      { id: 2, from: 'u1', text: 'Thanks Deven! Your PocketScope build is insane btw. What PCB approach were you considering?', time: '10:45 AM' },
-      { id: 3, from: 'u2', text: 'Was thinking a custom power management IC + LoRa shield in a compact 2-layer PCB. I can design it in KiCad.', time: '11:01 AM' },
-    ],
-    u3: [
-      { id: 1, from: 'u3', text: 'Hello! I am working on a diagnostic AI for low-resource settings. Noticed you work in similar SDG domains.', time: 'Yesterday' },
-      { id: 2, from: 'u1', text: 'Hi Lena! Yes, SDG 3 & 13 are close to my heart. Would love to hear about your retina project!', time: 'Yesterday' },
-    ],
-    u4: [],
-  });
-
   useEffect(() => {
     if (!authLoading && !me) {
       navigate('/login');
     }
   }, [me, authLoading, navigate]);
 
-  if (authLoading || !me) {
-    return <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>Loading...</div>;
-  }
-
   const scrollToBottom = () => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [selected, msgHistory]);
+    if (!me || !selected) {
+      setMessages([]);
+      return;
+    }
+    const unsubscribe = subscribeToDirectMessages(me.id, selected.id, (msgs) => {
+      setMessages(msgs);
+      setTimeout(scrollToBottom, 100);
+    });
+    return () => unsubscribe();
+  }, [me, selected]);
 
-  const send = () => {
-    if (!input.trim() || !selected) return;
-    const newMsg = {
-      id: Date.now(),
-      from: me.id,
-      text: input.trim(),
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    setMsgHistory(h => ({
-      ...h,
-      [selected.id]: [...(h[selected.id] || []), newMsg],
-    }));
-    setInput('');
+  const send = async () => {
+    if (!input.trim() || !selected || !me || isSending) return;
+    setIsSending(true);
+    try {
+      await sendDirectMessage(me.id, selected.id, {
+        from: me.id,
+        text: input.trim(),
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      setInput('');
+    } catch (err) {
+      console.error("Failed to send message", err);
+    } finally {
+      setIsSending(false);
+    }
   };
 
-  const messages = msgHistory[selected?.id] || [];
+  if (authLoading || !me) {
+    return <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh' }}>Loading...</div>;
+  }
 
   return (
     <div className="messages-page-new">
@@ -75,7 +73,6 @@ export default function Messages() {
 
         <div className="contacts-list-new">
            {contacts.map(u => {
-             const lastMsg = (msgHistory[u.id] || []).slice(-1)[0];
              const isActive = selected?.id === u.id;
              return (
                <button 
@@ -86,7 +83,7 @@ export default function Messages() {
                   <img src={u.avatar} alt={u.name} className="avatar-md" />
                   <div className="contact-meta-new">
                      <p className="contact-name-new">{u.name}</p>
-                     <p className="contact-preview-new">{lastMsg ? lastMsg.text : 'Start a discussion…'}</p>
+                     <p className="contact-preview-new">Click to view discussion</p>
                   </div>
                </button>
              );
@@ -105,7 +102,7 @@ export default function Messages() {
                       <p className="chat-user-name">{selected.name}</p>
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />
                    </div>
-                   <p className="chat-user-tag">{selected.tagline.split('•')[0]}</p>
+                   <p className="chat-user-tag">{selected.tagline?.split('•')[0]}</p>
                 </div>
                 <button className="btn-ghost" style={{ padding: 8 }}><MoreVertical size={20} /></button>
              </header>
@@ -145,7 +142,7 @@ export default function Messages() {
                    <button 
                      className="btn-send-new" 
                      onClick={send}
-                     disabled={!input.trim()}
+                     disabled={!input.trim() || isSending}
                    >
                       <Send size={18} />
                    </button>

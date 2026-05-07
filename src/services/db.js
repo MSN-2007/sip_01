@@ -69,6 +69,28 @@ export async function sendCommunityMessage(communityId, messageData) {
   return { id: docRef.id, ...messageData };
 }
 
+export function subscribeToDirectMessages(userId1, userId2, callback) {
+  const chatId = [userId1, userId2].sort().join('_');
+  const q = query(
+    collection(db, 'direct_messages', chatId, 'messages'),
+    orderBy('createdAt', 'asc')
+  );
+  return onSnapshot(q, (snapshot) => {
+    const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(messages);
+  });
+}
+
+export async function sendDirectMessage(userId1, userId2, messageData) {
+  validate(messageData, ['from', 'text']);
+  const chatId = [userId1, userId2].sort().join('_');
+  const docRef = await addDoc(collection(db, 'direct_messages', chatId, 'messages'), {
+    ...messageData,
+    createdAt: new Date().toISOString()
+  });
+  return { id: docRef.id, ...messageData };
+}
+
 // --- Users ---
 export async function getUserProfile(userId) {
   const docRef = doc(db, 'users', userId);

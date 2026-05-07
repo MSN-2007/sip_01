@@ -52,15 +52,22 @@ export function AppProvider({ children }) {
   const [likedProjects, setLikedProjects] = useState([]);
   const [notifications, setNotifications] = useState([]);
 
-  useEffect(() => {
-    // Fetch from Firebase, but mock data is already pre-loaded so the demo
-    // is instantly functional even if Firestore is slow or empty.
     getProjects().then(fetchedProjects => {
-      if (fetchedProjects.length > 0) setProjects(fetchedProjects);
+      if (fetchedProjects.length > 0) {
+        setProjects(prev => {
+          const existingIds = new Set(fetchedProjects.map(p => p.id));
+          return [...fetchedProjects, ...prev.filter(p => !existingIds.has(p.id))];
+        });
+      }
     }).catch(err => console.error("Error fetching projects", err));
 
     getUsers().then(fetchedUsers => {
-      if (fetchedUsers.length > 0) setUsers(fetchedUsers);
+      if (fetchedUsers.length > 0) {
+        setUsers(prev => {
+          const existingIds = new Set(fetchedUsers.map(u => u.id));
+          return [...fetchedUsers, ...prev.filter(u => !existingIds.has(u.id))];
+        });
+      }
     }).catch(err => console.error("Error fetching users", err));
   }, []);
 

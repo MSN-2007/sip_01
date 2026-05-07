@@ -7,20 +7,20 @@ import ProjectCard from '../components/ProjectCard';
 
 const DOMAIN_OPTIONS = ['All', 'AI', 'IoT', 'Agriculture', 'Health', 'Robotics'];
 
-// Fix #9: Spring Physics — ALL entrance animations
-const SPRING = { type: 'spring', stiffness: 300, damping: 20 };
+// Obsidian & Neon Spring Physics
+const SNAPPY_SPRING = { type: 'spring', stiffness: 400, damping: 30 };
 
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.08 }
+    transition: { staggerChildren: 0.1 }
   }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: SPRING }
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0, transition: SNAPPY_SPRING }
 };
 
 export default function Home() {
@@ -28,7 +28,6 @@ export default function Home() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDomain, setActiveDomain] = useState('All');
-  const [isFabOpen, setIsFabOpen] = useState(false);
 
   const personalizedFeed = useMemo(() => {
     let base = [...(projects || [])];
@@ -66,54 +65,30 @@ export default function Home() {
   }, [projects, searchQuery, activeDomain, user?.tagline]);
 
   return (
-    // Fix #8: Breathable layout — space-y-16 (was 12), pb-32 (was 24)
-    <div className="flex flex-col space-y-16 pb-32">
-
-      {/* Top Bar — Fix #2: Glass search, Fix #8: breathing */}
-      <header className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="relative w-full md:w-[420px]">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={18} strokeWidth={1.5} />
+    <div className="flex flex-col space-y-24 pb-32">
+      {/* Top Bar — Cinematic Search & Filters */}
+      <header className="flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="relative w-full md:w-[460px]">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-600" size={18} strokeWidth={1.5} />
           <input
             type="text"
-            className="w-full text-slate-300 focus:outline-none transition-all placeholder:text-zinc-600"
-            style={{
-              background: 'rgba(13,13,15,0.72)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderTopColor: 'rgba(255,255,255,0.14)',
-              borderRadius: 'var(--radius-input, 8px)',
-              padding: '12px 16px 12px 44px',
-            }}
-            onFocus={e => e.currentTarget.style.boxShadow = '0 0 20px rgba(99,102,241,0.15)'}
-            onBlur={e => e.currentTarget.style.boxShadow = 'none'}
-            placeholder="Search problems, projects, or skills..."
+            className="w-full bg-[#0A0A0B]/60 backdrop-blur-xl border border-white/5 rounded-lg py-4 pl-14 pr-6 text-zinc-200 focus:outline-none focus:border-violet-500/30 transition-all placeholder:text-zinc-600 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.05)]"
+            placeholder="Search projects or creators..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        {/* Fix #5/#10: Domain filter pills use ghost-tag style, active = subtle white fill */}
-        <div className="flex items-center overflow-x-auto no-scrollbar w-full md:w-auto gap-2">
+        <div className="flex items-center overflow-x-auto no-scrollbar w-full md:w-auto gap-3">
           {DOMAIN_OPTIONS.map(domain => (
             <motion.button
               key={domain}
-              whileTap={{ scale: 0.94 }}
-              transition={SPRING}
-              className={`px-4 py-1.5 text-xs font-semibold whitespace-nowrap uppercase tracking-wide transition-all ${
+              whileTap={{ scale: 0.95 }}
+              className={`px-5 py-2 text-[11px] font-bold uppercase tracking-[0.1em] rounded-full transition-all border ${
                 activeDomain === domain
-                  ? 'text-white'
-                  : 'text-zinc-500 hover:text-zinc-300'
+                  ? 'bg-violet-500/10 border-violet-500/40 text-violet-400'
+                  : 'bg-transparent border-white/5 text-zinc-500 hover:border-white/10 hover:text-zinc-300'
               }`}
-              style={{
-                borderRadius: 'var(--radius-btn, 8px)',
-                border: activeDomain === domain
-                  ? '1px solid rgba(99,102,241,0.4)'
-                  : '1px solid rgba(255,255,255,0.07)',
-                background: activeDomain === domain
-                  ? 'rgba(99,102,241,0.1)'
-                  : 'transparent',
-              }}
               onClick={() => setActiveDomain(domain)}
             >
               {domain}
@@ -122,71 +97,87 @@ export default function Home() {
         </div>
       </header>
 
-      <motion.section variants={containerVariants} initial="hidden" animate="show" className="space-y-10">
+      {/* Recommended Section */}
+      <motion.section variants={containerVariants} initial="hidden" animate="show" className="space-y-12">
         <motion.div variants={itemVariants} className="flex items-end justify-between">
-          <h2 className="font-black tracking-[-0.05em] text-white text-2xl flex items-center gap-3">
-            <Sparkles size={22} className="text-[#a855f7]" strokeWidth={1.5} /> 
-            {user ? 'Recommended for You' : 'Featured Projects'}
-          </h2>
-          <Link to="/explore" className="text-sm font-normal text-zinc-500 hover:text-white transition-colors flex items-center gap-1 group">
-            View all <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          <div>
+            <h2 className="heading-gradient text-3xl font-black tracking-[-0.07em] mb-2">
+              {user ? 'Selected for You' : 'Featured Showcase'}
+            </h2>
+            <p className="text-zinc-500 text-sm font-normal">Hand-picked innovations matching your profile.</p>
+          </div>
+          <Link to="/explore" className="text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-violet-400 transition-colors flex items-center gap-2 group">
+            Explore All <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
           {personalizedFeed.recommended.map(p => (
-            <motion.div key={p.id} variants={itemVariants}><ProjectCard project={p} /></motion.div>
+            <motion.div key={p.id} variants={itemVariants}>
+              <ProjectCard project={p} />
+            </motion.div>
           ))}
           {personalizedFeed.recommended.length === 0 && (
-            <div className="col-span-full py-16 text-center text-zinc-600">No specific recommendations yet.</div>
+            <div className="col-span-full py-20 text-center text-zinc-700 font-medium uppercase tracking-[0.2em] text-xs">
+               Project repository empty.
+            </div>
           )}
         </div>
       </motion.section>
 
-      <motion.section variants={containerVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-100px' }} className="space-y-10">
+      {/* Trending Section */}
+      <motion.section variants={containerVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} className="space-y-12">
         <motion.div variants={itemVariants} className="flex items-end justify-between">
-          <h2 className="font-black tracking-[-0.05em] text-white text-2xl flex items-center gap-3">
-            <Flame size={22} className="text-[#6366f1]" strokeWidth={1.5} /> 
-            Trending in {activeDomain === 'All' ? 'Your Network' : activeDomain}
-          </h2>
-          <Link to="/explore" className="text-sm font-normal text-zinc-500 hover:text-white transition-colors flex items-center gap-1 group">
-            See trends <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          <div>
+            <h2 className="heading-gradient text-3xl font-black tracking-[-0.07em] mb-2">
+              Market Velocity
+            </h2>
+            <p className="text-zinc-500 text-sm font-normal">Projects gaining significant traction this week.</p>
+          </div>
+          <Link to="/explore" className="text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-violet-400 transition-colors flex items-center gap-2 group">
+            Velocity Index <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </motion.div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
           {personalizedFeed.trending.map(p => (
-            <motion.div key={p.id} variants={itemVariants}><ProjectCard project={p} /></motion.div>
+            <motion.div key={p.id} variants={itemVariants}>
+              <ProjectCard project={p} />
+            </motion.div>
           ))}
         </div>
       </motion.section>
 
-      <motion.section variants={containerVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-100px' }} className="space-y-10">
+      {/* Explore Section */}
+      <motion.section variants={containerVariants} initial="hidden" whileInView="show" viewport={{ once: true, margin: "-100px" }} className="space-y-12">
         <motion.div variants={itemVariants} className="flex items-end justify-between">
-          <h2 className="font-black tracking-[-0.05em] text-white text-2xl flex items-center gap-3">
-            <Compass size={22} className="text-[#a855f7]" strokeWidth={1.5} /> 
-            Explore New Domains
-          </h2>
-          <Link to="/explore" className="text-sm font-normal text-zinc-500 hover:text-white transition-colors flex items-center gap-1 group">
-            Discover <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
+          <div>
+            <h2 className="heading-gradient text-3xl font-black tracking-[-0.07em] mb-2">
+              Discover Domains
+            </h2>
+            <p className="text-zinc-500 text-sm font-normal">Broaden your perspective across emerging tech.</p>
+          </div>
         </motion.div>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
           {personalizedFeed.explore.map(p => (
-            <motion.div key={p.id} variants={itemVariants}><ProjectCard project={p} /></motion.div>
+            <motion.div key={p.id} variants={itemVariants}>
+              <ProjectCard project={p} />
+            </motion.div>
           ))}
         </div>
       </motion.section>
 
-      {/* Fix #10: FAB uses btn-primary (neon gradient CTA ONLY) */}
-      <div className="fixed bottom-8 right-8 z-50 lg:hidden">
-        <motion.button
-          whileHover={{ scale: 1.08 }}
+      {/* Glow FAB (Mobile Only) */}
+      <div className="fixed bottom-10 right-10 z-50 lg:hidden">
+        <motion.button 
+          whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          className="btn-primary w-14 h-14 rounded-full flex items-center justify-center text-white"
+          transition={SNAPPY_SPRING}
+          className="glow-button w-16 h-16 rounded-full flex items-center justify-center shadow-2xl"
           onClick={() => navigate('/upload')}
         >
-          <Plus size={24} strokeWidth={2} />
+          <Plus size={28} strokeWidth={2.5} />
         </motion.button>
       </div>
     </div>

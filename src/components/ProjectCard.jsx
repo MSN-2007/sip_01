@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Share2, X, Eye, Activity, Calendar } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../context/AppContext';
 import ShareModal from './ShareModal';
 
-// Fix #9: Spring Physics — uniform spring config for ALL hover & entrance states
-const SPRING = { type: 'spring', stiffness: 300, damping: 20 };
+// Obsidian & Neon Spring Physics
+const SNAPPY_SPRING = { type: 'spring', stiffness: 400, damping: 30 };
 
 export default function ProjectCard({ project }) {
   const navigate = useNavigate();
@@ -41,140 +41,118 @@ export default function ProjectCard({ project }) {
   };
 
   const cardImage = project.image || 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800';
-  // Zeigarnik Effect
-  const progress = Math.floor(project.id.length * 3 + 40) % 55 + 40;
-  const milestone = project.stage === 'Idea' ? 'MVP' : project.stage === 'Prototype' ? 'Beta' : 'v2.0';
-
-  // Fix #7: Stage determines ghost tag color variant
-  const stageTagClass = project.stage === 'Production' ? 'ghost-tag-green' : 'ghost-tag';
 
   return (
     <>
       <motion.div
-        // Fix #9: Spring Physics
-        whileHover={{ scale: 1.025, y: -4, boxShadow: '0 0 28px rgba(99,102,241,0.3), 0 24px 48px rgba(0,0,0,0.6)' }}
-        transition={SPRING}
         onHoverStart={() => setIsHovered(true)}
         onHoverEnd={() => setIsHovered(false)}
-        // Fix #3: Nested Radii — cards use 16px (--radius-card)
-        // Fix #6: Multi-layer shadow baked in
-        className="group block cursor-pointer relative overflow-hidden"
-        style={{
-          borderRadius: 'var(--radius-card, 16px)',
-          background: '#0D0D0F',
-          border: '1px solid rgba(255,255,255,0.08)',
-          borderTop: '1px solid rgba(255,255,255,0.14)',
-          // Fix #6: Three-layer shadow
-          boxShadow: '0 4px 6px rgba(0,0,0,0.5), 0 12px 28px rgba(0,0,0,0.5), 0 32px 64px rgba(0,0,0,0.5)',
-        }}
+        whileHover={{ y: -4 }}
+        transition={SNAPPY_SPRING}
+        className="glass-card group relative overflow-hidden rounded-xl cursor-pointer"
       >
-        {/* Hover ambient glow overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#6366f1]/5 to-[#a855f7]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        {/* Subtle indigo ambient glow on hover */}
+        <div className="absolute inset-0 bg-violet-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-        {/* Fix #8: Breathable Layout — padding increased 50% (from p-5 to p-7) */}
-        <Link to={`/project/${project.id}`} className="relative z-10 flex flex-col h-full p-7">
-
-          {/* TOP ROW: Image + Title — "Floating Content" layout */}
-          <div className="flex items-start gap-5 mb-6">
-            <div className="w-[68px] h-[68px] shrink-0 overflow-hidden border border-white/10 relative shadow-md" style={{ borderRadius: 'var(--radius-btn, 8px)' }}>
-              <img src={cardImage} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+        <Link to={`/project/${project.id}`} className="relative z-10 block p-6">
+          <div className="flex items-start gap-5">
+            {/* Image Section */}
+            <div className="relative w-20 h-20 shrink-0 rounded-lg overflow-hidden border border-white/5 shadow-2xl">
+              <img 
+                src={cardImage} 
+                alt={project.title} 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-2">
-                {/* Fix #4: Heading = white 900, no compromise */}
-                <h1 className="font-black tracking-[-0.05em] text-white text-[1.1rem] leading-tight line-clamp-2">
-                  {project.title}
-                </h1>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="heading-gradient text-xl font-black tracking-[-0.07em] leading-[1.1] mb-2 line-clamp-2">
+                    {project.title}
+                  </h1>
+                  
+                  {/* Neon Pills */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className="neon-pill">{project.stage}</span>
+                    {project.domainTags?.[0] && (
+                      <span className="neon-pill">{project.domainTags[0]}</span>
+                    )}
+                  </div>
+                </div>
 
-                {/* Actions — reveal on hover */}
-                <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  {isOwner && (
-                    <button onClick={handleDelete} className="p-1.5 rounded-[6px] bg-black/40 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 transition-colors">
-                      <X size={13} strokeWidth={1.5} />
-                    </button>
-                  )}
-                  <motion.button whileTap={{ scale: 0.88 }} transition={SPRING} onClick={handleShare} className="p-1.5 rounded-[6px] bg-black/40 text-zinc-500 hover:text-white hover:bg-white/10 transition-colors">
-                    <Share2 size={13} strokeWidth={1.5} />
-                  </motion.button>
+                {/* Actions overlaying top right */}
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                   {isOwner && (
+                     <button onClick={handleDelete} className="p-1.5 rounded-md bg-white/5 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 transition-colors">
+                       <X size={14} />
+                     </button>
+                   )}
+                   <button onClick={handleShare} className="p-1.5 rounded-md bg-white/5 text-zinc-500 hover:text-white hover:bg-white/10 transition-colors">
+                     <Share2 size={14} />
+                   </button>
                 </div>
               </div>
 
-              {/* Fix #5: Ghost Tags — 1px border + 5% fill */}
-              <div className="flex items-center gap-2 mt-2">
-                <span className={stageTagClass}>{project.stage}</span>
-                {project.domainTags?.[0] && (
-                  <span className="ghost-tag">{project.domainTags[0]}</span>
-                )}
-              </div>
+              <p className="text-zinc-400 text-sm font-normal line-clamp-2 leading-relaxed mb-4">
+                {project.shortDescription || project.problemTitle}
+              </p>
             </div>
           </div>
 
-          {/* Fix #4: Description — zinc-500, weight 400, NEVER same as heading */}
-          <p className="text-[0.84rem] text-zinc-500 font-normal line-clamp-2 mb-6 flex-1">
-            {project.shortDescription || project.problemTitle}
-          </p>
-
-          {/* Zeigarnik Effect Progress Bar */}
-          <div className="mb-6">
-            <div className="flex justify-between text-[11px] mb-2">
-              <span className="data-label text-zinc-500 flex items-center gap-1.5">
-                <Activity size={11} strokeWidth={1.5}/> {progress}% to {milestone}
-              </span>
-              <span className="data-label gradient-text font-semibold">Building</span>
-            </div>
-            <div className="w-full h-[3px] bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: `${progress}%`, background: 'linear-gradient(135deg,#6366f1,#a855f7)' }} />
-            </div>
-          </div>
-
-          {/* FOOTER: Always-visible stats + Progressive Disclosure */}
-          <div className="flex items-center justify-between border-t border-white/5 pt-4 text-zinc-500 text-xs">
+          {/* Progressive Disclosure Section (Metadata) */}
+          <div className="border-t border-white/5 pt-4 mt-2 flex items-center justify-between">
             <div className="flex items-center gap-4">
-              {/* Like — always visible */}
+              {/* Like (Always Visible) */}
               <motion.button
-                whileTap={{ scale: 0.88 }}
-                transition={SPRING}
+                whileTap={{ scale: 0.9 }}
                 onClick={handleLike}
-                className={`stat-value flex items-center gap-1.5 transition-colors ${isLiked ? 'text-rose-500' : 'hover:text-rose-400'}`}
+                className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${isLiked ? 'text-violet-500' : 'text-zinc-500 hover:text-violet-400'}`}
               >
-                <Heart size={13} strokeWidth={1.5} className={isLiked ? 'fill-current' : ''} /> {localLikes}
+                <Heart size={14} className={isLiked ? 'fill-current' : ''} />
+                <span className="mono-data">{localLikes}</span>
               </motion.button>
 
-              {/* Fix #7: Progressive Disclosure — Views hidden by default, revealed on hover */}
-              <motion.div
-                className="stat-value flex items-center gap-1.5"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isHovered ? 1 : 0 }}
-                transition={SPRING}
-              >
-                <Eye size={13} strokeWidth={1.5} /> {project.views ?? '—'}
-              </motion.div>
-
-              {/* Fix #7: Date hidden by default, smooth reveal on hover */}
-              <motion.div
-                className="data-label flex items-center gap-1.5"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isHovered ? 1 : 0 }}
-                transition={{ ...SPRING, delay: 0.04 }}
-              >
-                <Calendar size={11} strokeWidth={1.5} />
-                {project.createdAt ? new Date(project.createdAt?.seconds ? project.createdAt.seconds * 1000 : project.createdAt).toLocaleDateString('en', { month: 'short', year: '2-digit' }) : '—'}
-              </motion.div>
+              {/* Revealable Stats */}
+              <AnimatePresence>
+                {isHovered && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    transition={SNAPPY_SPRING}
+                    className="flex items-center gap-4 border-l border-white/10 pl-4"
+                  >
+                    <div className="flex items-center gap-1.5 text-zinc-500 text-[11px]">
+                      <Eye size={13} />
+                      <span className="mono-data">{project.views ?? 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-zinc-500 text-[11px]">
+                      <Calendar size={13} />
+                      <span className="mono-data">
+                        {project.createdAt ? new Date(project.createdAt?.seconds ? project.createdAt.seconds * 1000 : project.createdAt).toLocaleDateString('en', { month: 'short', year: '2-digit' }) : '—'}
+                      </span>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
-            <img
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(project.userId)}&background=0D0D0F&color=fff&size=40`}
-              alt="Creator"
-              className="w-[22px] h-[22px] rounded-full border border-white/10"
-            />
+            {/* Creator Avatar */}
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-zinc-600 font-medium uppercase tracking-widest hidden group-hover:inline">BY</span>
+              <img 
+                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(project.userId)}&background=0A0A0B&color=8B5CF6&size=40`} 
+                alt="Creator" 
+                className="w-5 h-5 rounded-full border border-white/10" 
+              />
+            </div>
           </div>
-
         </Link>
       </motion.div>
 
-      <ShareModal
+      <ShareModal 
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         title={project.title}

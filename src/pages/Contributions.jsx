@@ -36,7 +36,7 @@ export default function Contributions() {
 
   const timeline = contributionList.length > 0 
     ? contributionList.map(p => ({ date: p.createdAt, action: `Published project: ${p.title}` }))
-    : [{ date: 'Today', action: `Joined ProjectSpace as ${user.name}` }, { date: 'Next Step', action: 'Upload your first project idea!' }];
+    : [{ date: 'Today', action: `Joined AcaDify as ${user.name}` }, { date: 'Next Step', action: 'Upload your first project idea!' }];
 
   return (
     <div className="home-page-new">

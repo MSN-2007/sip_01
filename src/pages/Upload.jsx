@@ -14,7 +14,8 @@ import {
   Globe, 
   Cpu, 
   Video, 
-  Search
+  Search,
+  Image
 } from 'lucide-react';
 
 /* ── Local SVG icons (avoids version dependency issues) ── */
@@ -40,10 +41,9 @@ import './Upload.css';
 
 const STEPS = [
   'Basic Info', 
-  'Category', 
+  'Domain & Tech', 
   'Stage', 
   'Description', 
-  'Tech Stack', 
   'Alt Uses', 
   'Media', 
   'Collaboration', 
@@ -129,12 +129,56 @@ export default function Upload() {
   const next = () => setStep(s => Math.min(s + 1, STEPS.length - 1));
   const prev = () => setStep(s => Math.max(s - 1, 0));
 
+  const [dragActive, setDragActive] = useState(false);
+  const [uploadedImages, setUploadedImages] = useState([]);
+  const [coverImageIndex, setCoverImageIndex] = useState(0);
+
+  const handleDrag = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleChange = function(e) {
+    e.preventDefault();
+    if (e.target.files && e.target.files[0]) {
+      handleFiles(e.target.files);
+    }
+  };
+
+  const handleFiles = (files) => {
+    const validFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+    validFiles.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedImages(prev => [...prev, e.target.result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+  
+  const removeImage = (index) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const canNext = () => {
     if (step === 0) return form.title && form.problemTitle;
-    if (step === 1) return form.domainTags.length > 0;
+    if (step === 1) return form.domainTags.length > 0 && form.techStack.length > 0;
     if (step === 2) return form.stage;
     if (step === 3) return form.problemExplained.length > 20;
-    if (step === 4) return form.techStack.length > 0;
     return true;
   };
 
@@ -158,8 +202,9 @@ export default function Upload() {
       collaborationCTA: form.stage === 'Production' ? 'Contribute' : 'Build With Me',
       longDescription: `${form.problemExplained}\n\n${form.solutionApproach}`,
       sdgTags: [],
+      image: uploadedImages.length > 0 ? uploadedImages[coverImageIndex] : null,
       proofOfWork: {
-         images: [],
+         images: uploadedImages,
          videoUrl: form.media[0] || null,
          links: form.links, // Enhanced links object
          patentNumber: null
@@ -221,43 +266,81 @@ export default function Upload() {
             </div>
           )}
 
-          {/* Step 1: Category */}
+          {/* Step 1: Domain & Tech Stack */}
           {step === 1 && (
             <div className="fade-in">
-              <div className="domain-grid-new">
-                {DOMAINS.map(d => (
-                  <div 
-                    key={d} 
-                    className={`domain-option-card ${form.domainTags.includes(d) ? 'selected' : ''}`}
-                    onClick={() => toggleArr('domainTags', d)}
-                  >
-                    <Globe size={24} />
-                    <span>{d}</span>
-                  </div>
-                ))}
-                {/* Custom Domains already added */}
-                {form.domainTags.filter(d => !DOMAINS.includes(d)).map(d => (
-                  <div 
-                    key={d} 
-                    className="domain-option-card selected"
-                    onClick={() => toggleArr('domainTags', d)}
-                  >
-                    <Plus size={24} />
-                    <span>{d}</span>
-                  </div>
-                ))}
+              <div className="form-field-group">
+                <label className="field-label-new">Domains & Categories</label>
+                <div className="domain-grid-new">
+                  {DOMAINS.map(d => (
+                    <div 
+                      key={d} 
+                      className={`domain-option-card ${form.domainTags.includes(d) ? 'selected' : ''}`}
+                      onClick={() => toggleArr('domainTags', d)}
+                    >
+                      <Globe size={20} />
+                      <span>{d}</span>
+                    </div>
+                  ))}
+                  {form.domainTags.filter(d => !DOMAINS.includes(d)).map(d => (
+                    <div 
+                      key={d} 
+                      className="domain-option-card selected"
+                      onClick={() => toggleArr('domainTags', d)}
+                    >
+                      <Plus size={20} />
+                      <span>{d}</span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="custom-tag-input-row" style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+                  <input 
+                    className="field-input-new" 
+                    style={{ flex: 1, padding: '12px 16px' }}
+                    placeholder="Add a custom domain..." 
+                    value={customDomain}
+                    onChange={e => setCustomDomain(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleAddCustomDomain()}
+                  />
+                  <button className="btn btn-secondary btn-sm" onClick={handleAddCustomDomain}>Add</button>
+                </div>
               </div>
-              
-              <div className="custom-tag-input-row" style={{ marginTop: 24, display: 'flex', gap: 12 }}>
-                <input 
-                  className="field-input-new" 
-                  style={{ flex: 1 }}
-                  placeholder="Can't find your domain? Add it here..." 
-                  value={customDomain}
-                  onChange={e => setCustomDomain(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleAddCustomDomain()}
-                />
-                <button className="btn btn-secondary" onClick={handleAddCustomDomain}>Add Domain</button>
+
+              <div className="form-field-group" style={{ marginTop: 40 }}>
+                <label className="field-label-new">Tech Stack & Tools</label>
+                <div className="tag-selector-new" style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+                  {TECH_STACKS.map(t => (
+                    <button 
+                      key={t} 
+                      className={`domain-pill ${form.techStack.includes(t) ? 'active' : ''}`}
+                      onClick={() => toggleArr('techStack', t)}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                  {form.techStack.filter(t => !TECH_STACKS.includes(t)).map(t => (
+                    <button 
+                      key={t} 
+                      className="domain-pill active"
+                      onClick={() => toggleArr('techStack', t)}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="custom-tag-input-row" style={{ display: 'flex', gap: 12 }}>
+                  <input 
+                    className="field-input-new" 
+                    style={{ flex: 1, padding: '12px 16px' }}
+                    placeholder="Add a technology (e.g. OpenCV, Arduino...)" 
+                    value={customTech}
+                    onChange={e => setCustomTech(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && handleAddCustomTech()}
+                  />
+                  <button className="btn btn-secondary btn-sm" onClick={handleAddCustomTech}>Add</button>
+                </div>
               </div>
             </div>
           )}
@@ -297,46 +380,9 @@ export default function Upload() {
             </div>
           )}
 
-          {/* Step 4: Tech Stack */}
+
+          {/* Step 4: Alt Uses */}
           {step === 4 && (
-            <div className="fade-in">
-               <div className="tag-selector-new" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
-                  {TECH_STACKS.map(t => (
-                    <button 
-                      key={t} 
-                      className={`domain-pill ${form.techStack.includes(t) ? 'active' : ''}`}
-                      onClick={() => toggleArr('techStack', t)}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                  {form.techStack.filter(t => !TECH_STACKS.includes(t)).map(t => (
-                    <button 
-                      key={t} 
-                      className="domain-pill active"
-                      onClick={() => toggleArr('techStack', t)}
-                    >
-                      {t}
-                    </button>
-                  ))}
-               </div>
-
-               <div className="custom-tag-input-row" style={{ display: 'flex', gap: 12 }}>
-                <input 
-                  className="field-input-new" 
-                  style={{ flex: 1 }}
-                  placeholder="Add a technology (e.g. OpenCV, Arduino...)" 
-                  value={customTech}
-                  onChange={e => setCustomTech(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleAddCustomTech()}
-                />
-                <button className="btn btn-secondary" onClick={handleAddCustomTech}>Add Tech</button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: Alt Uses */}
-          {step === 5 && (
             <div className="fade-in">
               <div className="form-field-group">
                  <label className="field-label-new">Alternative Uses</label>
@@ -346,9 +392,36 @@ export default function Upload() {
             </div>
           )}
 
-          {/* Step 6: Media & Links */}
-          {step === 6 && (
+          {/* Step 5: Media & Links */}
+          {step === 5 && (
             <div className="fade-in">
+              <div className="form-field-group" style={{ marginBottom: 40 }}>
+                <label className="field-label-new">Project Images</label>
+                <div 
+                  className={`drag-drop-zone ${dragActive ? 'active' : ''}`}
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                >
+                  <input type="file" multiple accept="image/*" className="drag-drop-input" onChange={handleChange} />
+                  <UploadIcon size={32} className="drag-drop-icon" />
+                  <p className="drag-drop-text">Drag and drop your project screenshots here, or click to browse.</p>
+                </div>
+                {uploadedImages.length > 0 && (
+                  <div className="image-preview-grid">
+                    {uploadedImages.map((src, index) => (
+                      <div key={index} className="image-preview-item">
+                        <img src={src} alt="Preview" />
+                        <button className="remove-image-btn" onClick={() => removeImage(index)}>
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
               <div className="media-links-grid">
                 <div className="form-field-group">
                   <label className="field-label-new">Pitch / Demo Link (Video URL)</label>
@@ -385,8 +458,8 @@ export default function Upload() {
             </div>
           )}
 
-          {/* Step 7: Collaboration */}
-          {step === 7 && (
+          {/* Step 6: Collaboration */}
+          {step === 6 && (
             <div className="fade-in">
                <div className="collaboration-toggle-card glass-card" 
                  style={{ 
@@ -439,8 +512,8 @@ export default function Upload() {
             </div>
           )}
 
-          {/* Step 8: Review & Schedule */}
-          {step === 8 && (
+          {/* Step 7: Review & Schedule */}
+          {step === 7 && (
              <div className="fade-in">
                 <div className="shadow-card review-card" style={{ padding: 24, borderRadius: 16, background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-subtle)' }}>
                    <div style={{ display: 'flex', gap: 24 }}>
@@ -452,11 +525,34 @@ export default function Upload() {
                             {form.domainTags.map(t => <span key={t} className="badge-item">{t}</span>)}
                          </div>
                       </div>
-                      <div style={{ width: 120, height: 120, background: 'var(--bg-elevated)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                         <Rocket size={48} className="text-gradient-icon" />
+                      
+                      <div style={{ width: 120, height: 120, background: 'var(--bg-elevated)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                         {uploadedImages.length > 0 ? (
+                           <img src={uploadedImages[coverImageIndex]} alt="Cover" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                         ) : (
+                           <Rocket size={48} className="text-gradient-icon" />
+                         )}
                       </div>
                    </div>
                 </div>
+
+                {uploadedImages.length > 0 && (
+                  <div className="cover-selection-section" style={{ marginTop: 24 }}>
+                    <label className="field-label-new">Select Cover Image</label>
+                    <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: 16 }}>Choose the image that will represent your project on the feed.</p>
+                    <div className="image-preview-grid">
+                      {uploadedImages.map((src, idx) => (
+                        <div 
+                          key={idx} 
+                          className={`image-preview-item ${coverImageIndex === idx ? 'cover-selected' : ''}`}
+                          onClick={() => setCoverImageIndex(idx)}
+                        >
+                          <img src={src} alt={`Option ${idx + 1}`} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="scheduling-section glass-card" style={{ marginTop: 24, padding: 20 }}>
                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>

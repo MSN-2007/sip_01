@@ -48,7 +48,7 @@ export default function Sidebar({ onNavigate }) {
           <div className="logo-sparkle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold' }}>
             AD
           </div>
-          <span className="logo-text">ProjectSpace</span>
+          <span className="logo-text">AcaDify</span>
         </Link>
 
         <nav className="sidebar-nav">

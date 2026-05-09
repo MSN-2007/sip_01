@@ -16,7 +16,7 @@ export default function MainLayout({ children, rightPanelContent }) {
          <button className="btn-icon" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>
             {isSidebarOpen ? <X /> : <Menu />}
          </button>
-         <span className="mobile-logo-text">ProjectSpace</span>
+         <span className="mobile-logo-text">AcaDify</span>
          <button className="btn-icon" onClick={() => setIsRightOpen(!isRightOpen)}>
             <Bell />
          </button>

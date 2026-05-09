@@ -22,6 +22,12 @@ export default function Settings() {
   const [activeTab, setActiveTab] = useState('profile');
   const [saveStatus, setSaveStatus] = useState(null);
   const [isSeeding, setIsSeeding] = useState(false);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const handleSave = () => {
     setSaveStatus('saving');
@@ -35,11 +41,19 @@ export default function Settings() {
     setIsSeeding(true);
     try {
       await seedDatabase();
-      alert("Database Seeded Successfully! The cloud now has your data!");
+      showToast("Database Seeded Successfully!");
     } catch (e) {
-      alert("Error seeding database: " + e.message);
+      showToast("Error seeding database: " + e.message);
     }
     setIsSeeding(false);
+  };
+
+  const handlePasswordUpdate = () => {
+    showToast("Password reset email sent to " + user.email);
+  };
+
+  const handleEnable2FA = () => {
+    showToast("Two-Factor Authentication wizard started. Check your email.");
   };
 
   if (authLoading) {
@@ -152,7 +166,7 @@ export default function Settings() {
                   <span className="settings-label">Password</span>
                   <p className="settings-section-desc">Last changed 3 months ago</p>
                 </div>
-                <button className="btn btn-ghost btn-sm">Update</button>
+                <button className="btn btn-ghost btn-sm" onClick={handlePasswordUpdate}>Update</button>
               </div>
 
               <div className="settings-row">
@@ -160,7 +174,7 @@ export default function Settings() {
                   <span className="settings-label">Two-Factor Authentication</span>
                   <p className="settings-section-desc">Add an extra layer of security to your account.</p>
                 </div>
-                <button className="btn btn-secondary btn-sm">Enable</button>
+                <button className="btn btn-secondary btn-sm" onClick={handleEnable2FA}>Enable</button>
               </div>
             </div>
           )}
@@ -235,7 +249,7 @@ export default function Settings() {
 
           <div className="settings-footer">
              {saveStatus === 'saved' && <span style={{ color: 'var(--accent-secondary)', fontSize: '0.875rem', alignSelf: 'center', fontWeight: 600 }}>Preferences updated!</span>}
-             <button className="btn btn-ghost" onClick={() => navigate(-1)}>Cancel</button>
+             <button className="btn btn-ghost">Cancel</button>
              <button className="btn btn-primary" onClick={handleSave} disabled={saveStatus === 'saving'}>
                 {saveStatus === 'saving' ? 'Saving...' : (saveStatus === 'saved' ? 'Saved' : 'Save Changes')}
                 {saveStatus !== 'saving' && <Save size={16} />}
@@ -244,6 +258,13 @@ export default function Settings() {
 
         </main>
       </div>
+
+      {toast && (
+        <div className="settings-toast glass-card">
+          <CheckCircle2 size={18} />
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

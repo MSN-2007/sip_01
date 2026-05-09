@@ -30,7 +30,7 @@ export function AppProvider({ children }) {
               name: firebaseUser.displayName || 'Developer',
               email: firebaseUser.email,
               avatar: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'Dev')}&background=random`,
-              tagline: 'ProjectSpace Builder',
+              tagline: 'AcaDify Builder',
             });
           }
         } catch (err) {

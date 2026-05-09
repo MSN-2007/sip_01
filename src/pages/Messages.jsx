@@ -39,6 +39,7 @@ export default function Messages() {
 
   const send = async () => {
     if (!input.trim() || !selected || !me || isSending) return;
+    console.log("Sending message from", me.id, "to", selected.id);
     setIsSending(true);
     try {
       await sendDirectMessage(me.id, selected.id, {
@@ -46,9 +47,11 @@ export default function Messages() {
         text: input.trim(),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
+      console.log("Message sent successfully");
       setInput('');
     } catch (err) {
       console.error("Failed to send message", err);
+      alert("Error sending message: " + err.message);
     } finally {
       setIsSending(false);
     }

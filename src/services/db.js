@@ -84,6 +84,13 @@ export function subscribeToDirectMessages(userId1, userId2, callback) {
 export async function sendDirectMessage(userId1, userId2, messageData) {
   validate(messageData, ['from', 'text']);
   const chatId = [userId1, userId2].sort().join('_');
+  
+  // Ensure the parent document exists (sometimes needed for rules/indexing)
+  await setDoc(doc(db, 'direct_messages', chatId), {
+    lastActivity: new Date().toISOString(),
+    participants: [userId1, userId2]
+  }, { merge: true });
+
   const docRef = await addDoc(collection(db, 'direct_messages', chatId, 'messages'), {
     ...messageData,
     createdAt: new Date().toISOString()

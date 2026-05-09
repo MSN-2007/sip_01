@@ -62,7 +62,7 @@ export default function ShareModal({ isOpen, onClose, title, url, userName, user
 
   /* ── Share text ── */
   const shareText = userName
-    ? `Check out ${userName}'s AI-generated project portfolio on ProjectSpace! ${userTagline ? `"${userTagline}"` : ''} ${url}`
+    ? `Check out ${userName}'s AI-generated project portfolio on AcaDify! ${userTagline ? `"${userTagline}"` : ''} ${url}`
     : `${title} ${url}`;
 
   /* ── Platform links ── */

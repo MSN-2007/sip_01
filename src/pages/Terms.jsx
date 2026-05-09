@@ -19,7 +19,7 @@ export default function Terms() {
        <div className="kanban-card glass-card" style={{ padding: 48, marginTop: 40, lineHeight: 1.8, color: 'var(--text-secondary)', maxWidth: 900 }}>
           <section style={{ marginBottom: 40 }}>
              <h2 style={{ color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 800, marginBottom: 16 }}>1. User Agreement</h2>
-             <p>Welcome to ProjectSpace. By accessing or using our platform, you agree to bound by these terms. Our network is designed for academic collaboration, problem-solving, and professional project visibility. Any misuse for social media simulation or non-academic purposes is strictly prohibited.</p>
+             <p>Welcome to AcaDify. By accessing or using our platform, you agree to bound by these terms. Our network is designed for academic collaboration, problem-solving, and professional project visibility. Any misuse for social media simulation or non-academic purposes is strictly prohibited.</p>
           </section>
 
           <section style={{ marginBottom: 40 }}>
@@ -39,7 +39,7 @@ export default function Terms() {
 
           <section>
              <h2 style={{ color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: 800, marginBottom: 16 }}>5. Platform Liability</h2>
-             <p>ProjectSpace is a facilitation tool and is not liable for any intellectual property disputes or outcomes of collaborations formed on the platform. Users are encouraged to establish their own NDAs or formal agreements for sensitive projects.</p>
+             <p>AcaDify is a facilitation tool and is not liable for any intellectual property disputes or outcomes of collaborations formed on the platform. Users are encouraged to establish their own NDAs or formal agreements for sensitive projects.</p>
           </section>
        </div>
     </div>

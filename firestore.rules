@@ -40,8 +40,33 @@ service cloud.firestore {
       // Subcollection for messages
       match /messages/{messageId} {
         allow read: if isSignedIn();
-        allow create: if isSignedIn() && isValidMessage();
-        allow delete: if isOwner(resource.data.userId);
+        allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+        allow delete: if isOwner(resource.data.senderId);
+      }
+    }
+    
+    // Direct Messages
+    match /direct_messages/{chatId} {
+      // Allow read/write if the current user is listed in the participants array
+      function isParticipant() {
+        return isSignedIn() && (
+          request.auth.uid in resource.data.participants
+        );
+      }
+      function isParticipantOnCreate() {
+        return isSignedIn() && (
+          request.auth.uid in request.resource.data.participants
+        );
+      }
+      allow read: if isSignedIn() && isParticipant();
+      allow create: if isParticipantOnCreate();
+      allow update: if isParticipant();
+      
+      match /messages/{messageId} {
+        allow read: if isSignedIn() && (
+          request.auth.uid in get(/databases/$(database)/documents/direct_messages/$(chatId)).data.participants
+        );
+        allow create: if isSignedIn() && request.resource.data.from == request.auth.uid;
       }
     }
     

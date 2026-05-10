@@ -99,10 +99,22 @@ export default function Messages() {
          {selected ? (
            <>
              <header className="chat-header-new">
-                <img src={selected.avatar} alt={selected.name} className="avatar-md" style={{ width: 40, height: 40 }} />
+                <img 
+                  src={selected.avatar} 
+                  alt={selected.name} 
+                  className="avatar-md hover-opacity" 
+                  style={{ width: 40, height: 40, cursor: 'pointer' }} 
+                  onClick={() => navigate(`/profile/${selected.id}`)}
+                />
                 <div style={{ flex: 1 }}>
                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <p className="chat-user-name">{selected.name}</p>
+                      <p 
+                        className="chat-user-name hover-underline" 
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => navigate(`/profile/${selected.id}`)}
+                      >
+                        {selected.name}
+                      </p>
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />
                    </div>
                    <p className="chat-user-tag">{selected.tagline?.split('•')[0]}</p>

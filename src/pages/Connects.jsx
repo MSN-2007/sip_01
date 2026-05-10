@@ -1,6 +1,8 @@
 import { useMemo, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Users, UserPlus, MessageSquare, Briefcase, Star, Search, ArrowRight, Check } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import ShareModal from '../components/ShareModal';
 import './Profile.css';
 
 // Demo-mode pending request — gives the panel life during showcase
@@ -9,11 +11,13 @@ const DEMO_PENDING = [
 ];
 
 export default function Connects() {
+  const navigate = useNavigate();
   const { users, user: currentUser } = useApp();
   const [search, setSearch] = useState('');
   const [requested, setRequested] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
   const [loadingAction, setLoadingAction] = useState(null);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
 
   useEffect(() => {
     if (!currentUser) return;
@@ -126,11 +130,17 @@ export default function Connects() {
                    if (!u) return null;
                    return (
                      <div key={req.id} className="kanban-card glass-card connects-user-card" style={{ padding: 24, display: 'flex', gap: 20, alignItems: 'center' }}>
-                        <img src={u.avatar} alt={u.name} className="profile-avatar-large" style={{ width: 80, height: 80, borderRadius: 16 }} />
+                        <img 
+                          src={u.avatar} 
+                          alt={u.name} 
+                          className="profile-avatar-large" 
+                          style={{ width: 80, height: 80, borderRadius: 16, cursor: 'pointer' }} 
+                          onClick={() => navigate(`/profile/${u.id}`)}
+                        />
                         <div style={{ flex: 1 }}>
                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                              <div style={{ minWidth: 0 }}>
-                                 <h4 style={{ fontSize: '1.2rem', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.name}</h4>
+                              <div style={{ minWidth: 0, cursor: 'pointer' }} onClick={() => navigate(`/profile/${u.id}`)}>
+                                 <h4 className="hover-underline" style={{ fontSize: '1.2rem', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{u.name}</h4>
                                  <p className="text-muted" style={{ fontSize: '0.85rem' }}>{u.tagline}</p>
                               </div>
                               <div className="badge-item" style={{ fontSize: '0.65rem', whiteSpace: 'nowrap' }}>New Request</div>
@@ -165,10 +175,14 @@ export default function Connects() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                  {recommended.length > 0 ? recommended.map(u => (
                     <div key={u.id} className="kanban-card glass-card" style={{ padding: 16, border: '1px solid var(--border-subtle)' }}>
-                       <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+                       <div 
+                         style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12, cursor: 'pointer' }}
+                         onClick={() => navigate(`/profile/${u.id}`)}
+                         className="hover-opacity"
+                       >
                           <img src={u.avatar} alt={u.name} className="avatar" style={{ width: 44, height: 44, borderRadius: 12 }} />
                           <div style={{ minWidth: 0 }}>
-                             <h5 style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>{u.name}</h5>
+                             <h5 className="hover-underline" style={{ fontSize: '0.9rem', fontWeight: 700, margin: 0, textOverflow: 'ellipsis', overflow: 'hidden' }}>{u.name}</h5>
                              <span style={{ fontSize: '0.7rem', color: 'var(--accent-primary)', fontWeight: 600 }}>{u.reason}</span>
                           </div>
                        </div>
@@ -195,13 +209,26 @@ export default function Connects() {
              <div className="kanban-card glass-card" style={{ padding: 24, marginTop: 32, background: 'var(--accent-primary-gradient)', border: 'none' }}>
                 <h4 style={{ color: 'white', fontSize: '1.1rem', fontWeight: 800 }}>Expand your network</h4>
                 <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', marginTop: 8, marginBottom: 16 }}>Invite fellow builders from your academic community to collaborate.</p>
-                <button className="btn btn-secondary" style={{ width: '100%', background: 'white', color: 'var(--accent-primary)', fontWeight: 700, border: 'none' }}>
+                <button 
+                  className="btn btn-secondary" 
+                  style={{ width: '100%', background: 'white', color: 'var(--accent-primary)', fontWeight: 700, border: 'none' }}
+                  onClick={() => setIsInviteModalOpen(true)}
+                >
                    Invite Builders
                 </button>
              </div>
           </div>
 
        </div>
+
+       <ShareModal 
+         isOpen={isInviteModalOpen}
+         onClose={() => setIsInviteModalOpen(false)}
+         title="Join AcaDify"
+         url={window.location.origin}
+         userName={currentUser?.name}
+         userTagline="is inviting you to collaborate on AcaDify!"
+       />
     </div>
   );
 }

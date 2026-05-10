@@ -1,5 +1,5 @@
 import { db } from '../config/firebase';
-import { collection, getDocs, getDoc, doc, setDoc, addDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, query, where, orderBy } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, setDoc, addDoc, updateDoc, deleteDoc, arrayUnion, arrayRemove, query, where, orderBy, onSnapshot } from 'firebase/firestore';
 
 // Helper: Data Validation
 function validate(data, requiredFields) {
@@ -46,8 +46,6 @@ export async function getCommunities() {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
-import { onSnapshot } from 'firebase/firestore';
-
 export function subscribeToCommunityMessages(communityId, callback) {
   const q = query(
     collection(db, 'communities', communityId, 'messages'),
@@ -57,6 +55,8 @@ export function subscribeToCommunityMessages(communityId, callback) {
   return onSnapshot(q, (snapshot) => {
     const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     callback(messages);
+  }, (err) => {
+    console.error('subscribeToCommunityMessages error:', err);
   });
 }
 
@@ -71,13 +71,18 @@ export async function sendCommunityMessage(communityId, messageData) {
 
 export function subscribeToDirectMessages(userId1, userId2, callback) {
   const chatId = [userId1, userId2].sort().join('_');
+  // No orderBy here to avoid requiring a composite Firestore index.
+  // We sort client-side instead.
   const q = query(
-    collection(db, 'direct_messages', chatId, 'messages'),
-    orderBy('createdAt', 'asc')
+    collection(db, 'direct_messages', chatId, 'messages')
   );
   return onSnapshot(q, (snapshot) => {
-    const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const messages = snapshot.docs
+      .map(docSnap => ({ id: docSnap.id, ...docSnap.data() }))
+      .sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''));
     callback(messages);
+  }, (err) => {
+    console.error('subscribeToDirectMessages error:', err.code, err.message);
   });
 }
 

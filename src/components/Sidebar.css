@@ -183,7 +183,7 @@
   font-weight: 500;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1024px) and (min-width: 769px) {
   .sidebar { width: 88px; }
   .sidebar-inner { padding: 32px 16px; }
   .logo-text, .sidebar-link span, .user-info { display: none; }

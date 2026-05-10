@@ -69,6 +69,14 @@ export async function sendCommunityMessage(communityId, messageData) {
   return { id: docRef.id, ...messageData };
 }
 
+export async function initDirectMessageChat(userId1, userId2) {
+  const chatId = [userId1, userId2].sort().join('_');
+  // Always store participants sorted so both users pass the participant check
+  await setDoc(doc(db, 'direct_messages', chatId), {
+    participants: [userId1, userId2].sort()
+  }, { merge: true });
+}
+
 export function subscribeToDirectMessages(userId1, userId2, callback) {
   const chatId = [userId1, userId2].sort().join('_');
   // No orderBy here to avoid requiring a composite Firestore index.

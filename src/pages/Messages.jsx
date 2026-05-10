@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send, Search, MessageSquare, MoreVertical, Paperclip, Smile } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { subscribeToDirectMessages, sendDirectMessage } from '../services/db';
+import { subscribeToDirectMessages, sendDirectMessage, initDirectMessageChat } from '../services/db';
 import './Messages.css';
 
 export default function Messages() {
@@ -30,11 +30,24 @@ export default function Messages() {
       setMessages([]);
       return;
     }
-    const unsubscribe = subscribeToDirectMessages(me.id, selected.id, (msgs) => {
-      setMessages(msgs);
-      setTimeout(scrollToBottom, 100);
+    
+    let unsubscribe = () => {};
+    let isCancelled = false;
+
+    initDirectMessageChat(me.id, selected.id).then(() => {
+      if (isCancelled) return;
+      unsubscribe = subscribeToDirectMessages(me.id, selected.id, (msgs) => {
+        setMessages(msgs);
+        setTimeout(scrollToBottom, 100);
+      });
+    }).catch(err => {
+      console.error("Failed to init chat", err);
     });
-    return () => unsubscribe();
+
+    return () => {
+      isCancelled = true;
+      unsubscribe();
+    };
   }, [me, selected]);
 
   const send = async () => {

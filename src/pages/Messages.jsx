@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Search, MessageSquare, MoreVertical, Paperclip, Smile } from 'lucide-react';
+import { Send, Search, MessageSquare, MoreVertical, Paperclip, Smile, AlertCircle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { subscribeToDirectMessages, sendDirectMessage, initDirectMessageChat } from '../services/db';
 import './Messages.css';
@@ -13,6 +13,7 @@ export default function Messages() {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([]);
   const [isSending, setIsSending] = useState(false);
+  const [listenerError, setListenerError] = useState(null);
   const chatEndRef = useRef(null);
   
   useEffect(() => {
@@ -28,26 +29,34 @@ export default function Messages() {
   useEffect(() => {
     if (!me || !selected) {
       setMessages([]);
+      setListenerError(null);
       return;
     }
-    
-    let unsubscribe = () => {};
-    let isCancelled = false;
 
-    initDirectMessageChat(me.id, selected.id).then(() => {
-      if (isCancelled) return;
-      unsubscribe = subscribeToDirectMessages(me.id, selected.id, (msgs) => {
+    setListenerError(null);
+
+    // Start listening IMMEDIATELY — do not wait for initDirectMessageChat.
+    // This ensures we always receive messages even if the parent doc doesn't exist yet.
+    const unsubscribe = subscribeToDirectMessages(
+      me.id,
+      selected.id,
+      (msgs) => {
         setMessages(msgs);
+        setListenerError(null);
         setTimeout(scrollToBottom, 100);
-      });
-    }).catch(err => {
-      console.error("Failed to init chat", err);
+      },
+      (err) => {
+        console.error('Message listener error:', err.code, err.message);
+        setListenerError(err.code || 'unknown-error');
+      }
+    );
+
+    // Init the parent chat doc in the background (needed for writes, not reads).
+    initDirectMessageChat(me.id, selected.id).catch(err => {
+      console.warn('initDirectMessageChat failed (non-critical):', err.code, err.message);
     });
 
-    return () => {
-      isCancelled = true;
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [me, selected]);
 
   const send = async () => {
@@ -136,7 +145,15 @@ export default function Messages() {
              </header>
 
              <div className="chat-messages-area">
-                {messages.length === 0 && (
+                {listenerError && (
+                   <div style={{ margin: 16, padding: 12, background: '#7f1d1d', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.85rem' }}>
+                     <AlertCircle size={18} color="#fca5a5" />
+                     <span style={{ color: '#fca5a5' }}>
+                       Could not load messages ({listenerError}). Check Firestore rules are published.
+                     </span>
+                   </div>
+                )}
+                {messages.length === 0 && !listenerError && (
                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>
                       <MessageSquare size={48} style={{ marginBottom: 16 }} />
                       <p>Start a problem-driven discussion with {selected.name}</p>

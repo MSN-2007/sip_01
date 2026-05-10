@@ -77,10 +77,8 @@ export async function initDirectMessageChat(userId1, userId2) {
   }, { merge: true });
 }
 
-export function subscribeToDirectMessages(userId1, userId2, callback) {
+export function subscribeToDirectMessages(userId1, userId2, callback, onError) {
   const chatId = [userId1, userId2].sort().join('_');
-  // No orderBy here to avoid requiring a composite Firestore index.
-  // We sort client-side instead.
   const q = query(
     collection(db, 'direct_messages', chatId, 'messages')
   );
@@ -91,6 +89,7 @@ export function subscribeToDirectMessages(userId1, userId2, callback) {
     callback(messages);
   }, (err) => {
     console.error('subscribeToDirectMessages error:', err.code, err.message);
+    if (onError) onError(err);
   });
 }
 

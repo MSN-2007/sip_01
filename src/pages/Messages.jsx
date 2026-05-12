@@ -59,9 +59,10 @@ export default function Messages() {
     return () => unsubscribe();
   }, [me, selected]);
 
-  const send = async () => {
+  const send = async (e) => {
+    e?.preventDefault();
     if (!input.trim() || !selected || !me || isSending) return;
-    console.log("Sending message from", me.id, "to", selected.id);
+    
     setIsSending(true);
     try {
       await sendDirectMessage(me.id, selected.id, {
@@ -69,7 +70,6 @@ export default function Messages() {
         text: input.trim(),
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       });
-      console.log("Message sent successfully");
       setInput('');
     } catch (err) {
       console.error("Failed to send message", err);
@@ -174,24 +174,23 @@ export default function Messages() {
              </div>
 
              <footer className="chat-input-area">
-                <div className="input-container-new">
-                   <button className="btn-ghost" style={{ padding: '0 8px' }}><Paperclip size={20} /></button>
+                <form className="input-container-new" onSubmit={send}>
+                   <button type="button" className="btn-ghost" style={{ padding: '0 8px' }}><Paperclip size={20} /></button>
                    <input 
                      className="msg-input-field" 
-                     placeholder={`Collaborate with ${selected.name.split(' ')[0]}...`}
+                     placeholder={`Message ${selected.name.split(' ')[0]}...`}
                      value={input}
                      onChange={e => setInput(e.target.value)}
-                     onKeyDown={e => e.key === 'Enter' && send()}
                    />
-                   <button className="btn-ghost" style={{ padding: '0 8px' }}><Smile size={20} /></button>
+                   <button type="button" className="btn-ghost" style={{ padding: '0 8px' }}><Smile size={20} /></button>
                    <button 
+                     type="submit"
                      className="btn-send-new" 
-                     onClick={send}
                      disabled={!input.trim() || isSending}
                    >
                       <Send size={18} />
                    </button>
-                </div>
+                </form>
              </footer>
            </>
          ) : (

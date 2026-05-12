@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { mockUsers, mockProjects, mockCommunities } from '../data/mockData';
 import { auth } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getUserProfile, getProjects, getUsers } from '../services/db';
+import { getUserProfile, getProjects, getUsers, getCommunities } from '../services/db';
 
 const AppContext = createContext(null);
 
@@ -23,15 +23,28 @@ export function AppProvider({ children }) {
           const userDoc = await getUserProfile(firebaseUser.uid);
           if (userDoc) {
             setUser(userDoc);
+            if (userDoc.joinedCommunities) setJoinedCommunities(userDoc.joinedCommunities);
+            if (userDoc.likedProjects) setLikedProjects(userDoc.likedProjects);
+            if (userDoc.following) setFollowing(userDoc.following);
           } else {
             // Fallback if document missing
-            setUser({
+            const newUser = {
               id: firebaseUser.uid,
               name: firebaseUser.displayName || 'Developer',
               email: firebaseUser.email,
               avatar: firebaseUser.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(firebaseUser.displayName || 'Dev')}&background=random`,
               tagline: 'AcaDify Builder',
-            });
+              joinedCommunities: [],
+              likedProjects: [],
+              following: []
+            };
+            setUser(newUser);
+            // Optionally, we could create the user doc here
+            try {
+              const { setDoc, doc } = await import('firebase/firestore');
+              const { db } = await import('../config/firebase');
+              await setDoc(doc(db, 'users', firebaseUser.uid), newUser, { merge: true });
+            } catch (e) { console.error("Error creating user doc", e); }
           }
         } catch (err) {
           console.error("Error fetching user profile", err);
@@ -70,26 +83,46 @@ export function AppProvider({ children }) {
         });
       }
     }).catch(err => console.error("Error fetching users", err));
+
+    getCommunities().then(fetchedCommunities => {
+      if (fetchedCommunities.length > 0) {
+        setCommunities(prev => {
+          const existingIds = new Set(fetchedCommunities.map(c => c.id));
+          return [...fetchedCommunities, ...prev.filter(c => !existingIds.has(c.id))];
+        });
+      }
+    }).catch(err => console.error("Error fetching communities", err));
   }, []);
 
-  const toggleFollow = (userId) => {
-    setFollowing(prev =>
-      prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
-    );
-  };
-
-  const toggleJoinCommunity = (communityId) => {
-    setJoinedCommunities(prev => {
-      const isJoined = prev.includes(communityId);
-      const next = isJoined ? prev.filter(id => id !== communityId) : [...prev, communityId];
-      
-      // Persistence placeholder - would normally call updateDoc(doc(db, 'users', user.id), ...)
-      if (user) {
-        console.log(`User ${user.id} ${isJoined ? 'left' : 'joined'} community ${communityId}`);
-      }
-      
+  const toggleFollow = async (userId) => {
+    let next;
+    setFollowing(prev => {
+      next = prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId];
       return next;
     });
+    if (user && user.id !== 'u1') {
+      try {
+        const { updateDoc, doc } = await import('firebase/firestore');
+        const { db } = await import('../config/firebase');
+        await updateDoc(doc(db, 'users', user.id), { following: next });
+      } catch (e) { console.error("Failed to update following", e); }
+    }
+  };
+
+  const toggleJoinCommunity = async (communityId) => {
+    let next;
+    setJoinedCommunities(prev => {
+      const isJoined = prev.includes(communityId);
+      next = isJoined ? prev.filter(id => id !== communityId) : [...prev, communityId];
+      return next;
+    });
+    if (user && user.id !== 'u1') {
+      try {
+        const { updateDoc, doc } = await import('firebase/firestore');
+        const { db } = await import('../config/firebase');
+        await updateDoc(doc(db, 'users', user.id), { joinedCommunities: next });
+      } catch (e) { console.error("Failed to update joined communities", e); }
+    }
   };
 
   const toggleLike = (projectId) => {
@@ -132,12 +165,30 @@ export function AppProvider({ children }) {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
-  const addCommunity = (community) => {
-    setCommunities(prev => [community, ...prev]);
-    setJoinedCommunities(prev => [...prev, community.id]);
-    
-    // In a real app, we'd also call addDoc(collection(db, 'communities'), ...) here
-    console.log("Added new community:", community.name);
+  const addCommunity = async (community) => {
+    // Write to Firestore first
+    try {
+      const { setDoc, doc, updateDoc } = await import('firebase/firestore');
+      const { db } = await import('../config/firebase');
+      await setDoc(doc(db, 'communities', community.id), community);
+      
+      // Update local state
+      setCommunities(prev => [community, ...prev]);
+      
+      const newJoined = [...joinedCommunities, community.id];
+      setJoinedCommunities(newJoined);
+      
+      if (user && user.id !== 'u1') {
+        try {
+          await updateDoc(doc(db, 'users', user.id), { joinedCommunities: newJoined });
+        } catch (e) { console.error(e); }
+      }
+      
+      console.log("Added new community:", community.name);
+    } catch (err) {
+      console.error("Failed to create community in database:", err);
+      alert("Failed to create community.");
+    }
   };
 
   const [theme, setTheme] = useState('dark');

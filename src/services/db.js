@@ -68,11 +68,18 @@ export function subscribeToCommunityMessages(communityId, callback) {
 
 export async function sendCommunityMessage(communityId, messageData) {
   validate(messageData, ['senderId', 'text']);
-  const docRef = await addDoc(collection(db, 'communities', communityId, 'messages'), {
-    ...messageData,
-    createdAt: new Date().toISOString()
-  });
-  return { id: docRef.id, ...messageData };
+  try {
+    const docRef = await addDoc(collection(db, 'communities', communityId, 'messages'), {
+      ...messageData,
+      createdAt: new Date().toISOString()
+    });
+    return { id: docRef.id, ...messageData };
+  } catch (err) {
+    if (err.code === 'permission-denied') {
+      alert('Message failed: Firestore rules are blocking this. Please deploy the updated firestore.rules to your Firebase console!');
+    }
+    throw err;
+  }
 }
 
 export async function initDirectMessageChat(userId1, userId2) {
@@ -103,17 +110,24 @@ export async function sendDirectMessage(userId1, userId2, messageData) {
   validate(messageData, ['from', 'text']);
   const chatId = [userId1, userId2].sort().join('_');
   
-  // Ensure the parent document exists (sometimes needed for rules/indexing)
-  await setDoc(doc(db, 'direct_messages', chatId), {
-    lastActivity: new Date().toISOString(),
-    participants: [userId1, userId2]
-  }, { merge: true });
+  try {
+    // Ensure the parent document exists (sometimes needed for rules/indexing)
+    await setDoc(doc(db, 'direct_messages', chatId), {
+      lastActivity: new Date().toISOString(),
+      participants: [userId1, userId2]
+    }, { merge: true });
 
-  const docRef = await addDoc(collection(db, 'direct_messages', chatId, 'messages'), {
-    ...messageData,
-    createdAt: new Date().toISOString()
-  });
-  return { id: docRef.id, ...messageData };
+    const docRef = await addDoc(collection(db, 'direct_messages', chatId, 'messages'), {
+      ...messageData,
+      createdAt: new Date().toISOString()
+    });
+    return { id: docRef.id, ...messageData };
+  } catch (err) {
+    if (err.code === 'permission-denied') {
+      alert('Message failed: Firestore rules are blocking this. Please deploy the updated firestore.rules to your Firebase console!');
+    }
+    throw err;
+  }
 }
 
 // --- Users ---

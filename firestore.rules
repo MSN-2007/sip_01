@@ -17,21 +17,33 @@ service cloud.firestore {
       allow update, delete: if isOwner(resource.data.userId);
     }
 
-    // Communities: Anyone can read/write for prototype
+    // Communities: Anyone can read, only signed in users can write
     match /communities/{communityId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if isSignedIn();
+      allow delete: if false;
 
       match /messages/{messageId} {
-        allow read, write: if true;
+        allow read: if true;
+        allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if false;
       }
     }
 
-    // Direct Messages
+    // Direct Messages: Only participants can read/write
     match /direct_messages/{chatId} {
-      allow read, write: if true;
+      // Check if the current user's UID is part of the chatId (which is format uid1_uid2)
+      function isParticipant(chatId) {
+        return isSignedIn() && chatId.matches('.*' + request.auth.uid + '.*');
+      }
+      
+      allow read, update, create: if isParticipant(chatId);
+      allow delete: if false;
 
       match /messages/{messageId} {
-        allow read, write: if true;
+        allow read: if isParticipant(chatId);
+        allow create: if isParticipant(chatId) && request.resource.data.from == request.auth.uid;
+        allow update, delete: if false;
       }
     }
 
@@ -48,13 +60,9 @@ service cloud.firestore {
         request.auth.uid == resource.data.to
       );
       allow create: if isSignedIn() && request.auth.uid == request.resource.data.from;
-      allow update: if isSignedIn() && (
+      allow update, delete: if isSignedIn() && (
         request.auth.uid == resource.data.to ||
         request.auth.uid == resource.data.from
-      );
-      allow delete: if isSignedIn() && (
-        request.auth.uid == resource.data.from ||
-        request.auth.uid == resource.data.to
       );
     }
   }

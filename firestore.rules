@@ -17,30 +17,21 @@ service cloud.firestore {
       allow update, delete: if isOwner(resource.data.userId);
     }
 
-    // Communities: Anyone can read, only owners can edit metadata
+    // Communities: Anyone can read/write for prototype
     match /communities/{communityId} {
-      allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isOwner(resource.data.userId);
+      allow read, write: if true;
 
       match /messages/{messageId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
-        allow delete: if isOwner(resource.data.senderId);
+        allow read, write: if true;
       }
     }
 
-    // Direct Messages — simpler rules, no cross-document get() needed
+    // Direct Messages
     match /direct_messages/{chatId} {
-      // Allow any signed-in user to read/write the parent chat doc if their uid is part of the chatId
-      allow read, write: if isSignedIn() && chatId.matches('.*' + request.auth.uid + '.*');
+      allow read, write: if true;
 
-      // Allow any signed-in user to read/create messages in a chat they belong to
       match /messages/{messageId} {
-        allow read: if isSignedIn() && chatId.matches('.*' + request.auth.uid + '.*');
-        allow create: if isSignedIn()
-          && chatId.matches('.*' + request.auth.uid + '.*')
-          && request.resource.data.from == request.auth.uid;
+        allow read, write: if true;
       }
     }
 

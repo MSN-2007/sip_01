@@ -27,12 +27,15 @@ const stageConfig = {
 export default function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { projects, likedProjects, toggleLike, following, toggleFollow, user } = useApp();
+  const { projects, likedProjects, toggleLike, following, toggleFollow, user, updateProject } = useApp();
   const project = projects.find(p => p.id === id);
   const [showCollabModal, setShowCollabModal] = useState(false);
   const [collabMsg, setCollabMsg] = useState('');
   const [collabSent, setCollabSent] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isUpdatingStage, setIsUpdatingStage] = useState(false);
+  const [skillInput, setSkillInput] = useState('');
+  const [isSubmittingCollab, setIsSubmittingCollab] = useState(false);
 
   if (!project) {
     return (
@@ -76,9 +79,50 @@ export default function ProjectDetail() {
     toggleFollow(project.userId);
   };
 
-  const sendCollabRequest = () => {
-    setCollabSent(true);
-    setTimeout(() => { setShowCollabModal(false); setCollabSent(false); setCollabMsg(''); }, 2000);
+  const sendCollabRequest = async () => {
+    setIsSubmittingCollab(true);
+    try {
+      const { sendConnectionRequest } = await import('../services/db');
+      await sendConnectionRequest(user.id, project.userId, {
+        type: 'collab_request',
+        projectId: project.id,
+        projectTitle: project.title,
+        message: collabMsg
+      });
+      setCollabSent(true);
+      setTimeout(() => { setShowCollabModal(false); setCollabSent(false); setCollabMsg(''); }, 2000);
+    } catch (e) {
+      alert("Failed to send request.");
+    } finally {
+      setIsSubmittingCollab(false);
+    }
+  };
+
+  const handleAddSkill = async () => {
+    if (skillInput.trim() && !(project.skillsNeeded || []).includes(skillInput.trim())) {
+      const newSkills = [...(project.skillsNeeded || []), skillInput.trim()];
+      await updateProject(project.id, { skillsNeeded: newSkills });
+      setSkillInput('');
+    }
+  };
+
+  const handleRemoveSkill = async (skillToRemove) => {
+    const newSkills = (project.skillsNeeded || []).filter(s => s !== skillToRemove);
+    await updateProject(project.id, { skillsNeeded: newSkills });
+  };
+
+  const handleStageChange = async (e) => {
+    const newStage = e.target.value;
+    if (newStage === project.stage) return;
+    setIsUpdatingStage(true);
+    try {
+      await updateProject(project.id, { stage: newStage });
+    } catch (err) {
+      console.error("Failed to update stage", err);
+      alert("Failed to update stage.");
+    } finally {
+      setIsUpdatingStage(false);
+    }
   };
 
   return (
@@ -103,10 +147,24 @@ export default function ProjectDetail() {
             <div className="pd-hero glass-card">
               <div className="pd-hero-top">
                 <div className="pd-meta">
-                  <span className={`stage-badge ${stage.cls}`}>
-                    <span className="stage-dot" style={{ background: stage.dot }} />
-                    {project.stage}
-                  </span>
+                  {isOwn ? (
+                    <select
+                      className={`stage-badge ${stage.cls}`}
+                      style={{ border: 'none', outline: 'none', cursor: 'pointer', appearance: 'auto', paddingRight: 24 }}
+                      value={project.stage}
+                      onChange={handleStageChange}
+                      disabled={isUpdatingStage}
+                    >
+                      {Object.keys(stageConfig).map(s => (
+                        <option key={s} value={s} style={{ color: 'black' }}>{s}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className={`stage-badge ${stage.cls}`}>
+                      <span className="stage-dot" style={{ background: stage.dot }} />
+                      {project.stage}
+                    </span>
+                  )}
                   {(project.domainTags || []).map(d => (
                     <span key={d} className="chip chip-domain">{d}</span>
                   ))}
@@ -272,10 +330,35 @@ export default function ProjectDetail() {
             </div>
 
             {/* Collaboration Card */}
-            {(!isOwn || project.skillsNeeded?.length > 0) && (
+            {(!isOwn || (project.skillsNeeded?.length > 0 || isOwn)) && (
               <div className="sidebar-card pd-cta-card mt-4">
                 <p className="pd-sidebar-label">Collaboration</p>
-                {project.skillsNeeded?.length > 0 && (
+                
+                {isOwn ? (
+                  <div className="skills-needed-box">
+                    <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: 12, fontWeight: 700, textTransform: 'uppercase' }}>Manage Skills Needed:</p>
+                    <div className="skills-pill-group" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }}>
+                        {(project.skillsNeeded || []).map(s => (
+                          <span key={s} className="mini-skill-badge" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            {s}
+                            <span style={{ cursor: 'pointer', opacity: 0.7 }} onClick={() => handleRemoveSkill(s)}>×</span>
+                          </span>
+                        ))}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input 
+                        type="text" 
+                        value={skillInput}
+                        onChange={e => setSkillInput(e.target.value)}
+                        placeholder="Add a skill..."
+                        className="form-input"
+                        style={{ padding: '6px 10px', fontSize: '0.85rem' }}
+                        onKeyDown={e => e.key === 'Enter' && handleAddSkill()}
+                      />
+                      <button className="btn btn-primary btn-sm" onClick={handleAddSkill}>Add</button>
+                    </div>
+                  </div>
+                ) : project.skillsNeeded?.length > 0 && (
                    <div className="skills-needed-box">
                       <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: 12, fontWeight: 700, textTransform: 'uppercase' }}>Seeking help with:</p>
                       <div className="skills-pill-group" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
@@ -356,8 +439,8 @@ export default function ProjectDetail() {
                   />
                   <div className="modal-actions">
                     <button className="btn btn-ghost" onClick={() => setShowCollabModal(false)}>Cancel</button>
-                    <button className="btn btn-primary" onClick={sendCollabRequest} disabled={!collabMsg.trim()}>
-                      <Zap size={16} /> Send Request
+                    <button className="btn btn-primary" onClick={sendCollabRequest} disabled={!collabMsg.trim() || isSubmittingCollab}>
+                      <Zap size={16} /> {isSubmittingCollab ? 'Sending...' : 'Send Request'}
                     </button>
                   </div>
                 </>

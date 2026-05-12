@@ -12,7 +12,7 @@ const DEMO_PENDING = [
 
 export default function Connects() {
   const navigate = useNavigate();
-  const { users, user: currentUser } = useApp();
+  const { users, user: currentUser, projects, updateProject } = useApp();
   const [search, setSearch] = useState('');
   const [requested, setRequested] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
@@ -54,13 +54,44 @@ export default function Connects() {
     setLoadingAction(null);
   };
 
-  const handleAccept = async (connectionId, fromId) => {
-    setLoadingAction(connectionId);
+  const handleAccept = async (req) => {
+    setLoadingAction(req.id);
     try {
       const { acceptConnectionRequest } = await import('../services/db');
-      await acceptConnectionRequest(connectionId);
-      setPendingRequests(prev => prev.filter(r => r.id !== connectionId));
-      alert("Connection Accepted! You can now message them.");
+      await acceptConnectionRequest(req.id);
+      setPendingRequests(prev => prev.filter(r => r.id !== req.id));
+
+      if (req.type === 'collab_request' && req.projectId) {
+        const project = projects.find(p => p.id === req.projectId);
+        if (project && project.skillsNeeded?.length > 0) {
+          const closeVacancy = window.confirm(`Connection Accepted!\nDo you want to close a vacancy for the project "${req.projectTitle || project.title}"?`);
+          if (closeVacancy) {
+            let skillToRemove = project.skillsNeeded[0];
+            if (project.skillsNeeded.length > 1) {
+              const skillList = project.skillsNeeded.map((s, i) => `${i + 1}: ${s}`).join('\n');
+              const choice = window.prompt(`Which skill vacancy do you want to close?\nEnter the number:\n${skillList}`);
+              const index = parseInt(choice) - 1;
+              if (!isNaN(index) && project.skillsNeeded[index]) {
+                skillToRemove = project.skillsNeeded[index];
+              } else {
+                alert('Invalid choice. Vacancy not closed.');
+                skillToRemove = null;
+              }
+            }
+            if (skillToRemove) {
+               const newSkills = project.skillsNeeded.filter(s => s !== skillToRemove);
+               await updateProject(project.id, { skillsNeeded: newSkills });
+               alert(`Closed vacancy for: ${skillToRemove}`);
+            }
+          } else {
+             alert("Connection Accepted! You can now message them.");
+          }
+        } else {
+          alert("Connection Accepted! You can now message them.");
+        }
+      } else {
+        alert("Connection Accepted! You can now message them.");
+      }
     } catch(e) {
       alert("Failed to accept: " + e.message);
     }
@@ -148,7 +179,7 @@ export default function Connects() {
                            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
                               <button 
                                 className="btn btn-primary btn-sm" 
-                                onClick={() => handleAccept(req.id, req.from)}
+                                onClick={() => handleAccept(req)}
                                 disabled={loadingAction === req.id}
                               >
                                 {loadingAction === req.id ? 'Accepting...' : 'Accept Request'}

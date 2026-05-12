@@ -34,6 +34,12 @@ export async function deleteProject(projectId) {
   return true;
 }
 
+export async function updateProject(projectId, updateData) {
+  const docRef = doc(db, 'projects', projectId);
+  await updateDoc(docRef, updateData);
+  return true;
+}
+
 export async function toggleLikeProject(projectId, userId) {
   // In a full app, we'd keep a subcollection of likes. 
   // For this beta, we'll assume the context handles UI state and we just increment/decrement
@@ -124,14 +130,15 @@ export async function getUsers() {
 }
 
 // --- Connections (Social Graph) ---
-export async function sendConnectionRequest(fromUserId, toUserId) {
-  const connectionId = `${fromUserId}_${toUserId}`;
+export async function sendConnectionRequest(fromUserId, toUserId, additionalData = {}) {
+  const connectionId = additionalData.projectId ? `${fromUserId}_${toUserId}_${additionalData.projectId}` : `${fromUserId}_${toUserId}`;
   await setDoc(doc(db, 'connections', connectionId), {
     id: connectionId,
     from: fromUserId,
     to: toUserId,
     status: 'pending',
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    ...additionalData
   });
   return true;
 }

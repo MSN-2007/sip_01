@@ -140,6 +140,7 @@ export default function Messages() {
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981' }} />
                    </div>
                    <p className="chat-user-tag">{selected.tagline?.split('•')[0]}</p>
+                   <p style={{ fontSize: '10px', color: '#ff4444', margin: 0, marginTop: 4, fontFamily: 'monospace' }}>Chat ID: {[me.id, selected.id].sort().join('_')}</p>
                 </div>
                 <button className="btn-ghost" style={{ padding: 8 }}><MoreVertical size={20} /></button>
              </header>

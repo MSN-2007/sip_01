@@ -21,14 +21,15 @@ export default function Connects() {
 
   useEffect(() => {
     if (!currentUser) return;
-    import('../services/db').then(({ getPendingRequests }) => {
-      getPendingRequests(currentUser.id)
-        .then(reqs => {
-          // Use real Firestore data if available, otherwise fall back to demo data
-          setPendingRequests(reqs.length > 0 ? reqs : DEMO_PENDING);
-        })
-        .catch(() => setPendingRequests(DEMO_PENDING));
+    let unsubscribe = () => {};
+    
+    import('../services/db').then(({ subscribeToPendingRequests }) => {
+      unsubscribe = subscribeToPendingRequests(currentUser.id, (reqs) => {
+        setPendingRequests(reqs.length > 0 ? reqs : DEMO_PENDING);
+      });
     }).catch(() => setPendingRequests(DEMO_PENDING));
+    
+    return () => unsubscribe();
   }, [currentUser]);
 
   if (!currentUser) {

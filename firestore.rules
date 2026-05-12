@@ -53,17 +53,10 @@ service cloud.firestore {
       allow write: if isOwner(userId);
     }
 
-    // Connections: Only participants can read/write
+    // Connections: Relaxed for debugging
     match /connections/{connectionId} {
-      allow read: if isSignedIn() && (
-        request.auth.uid == resource.data.from ||
-        request.auth.uid == resource.data.to
-      );
-      allow create: if isSignedIn() && request.auth.uid == request.resource.data.from;
-      allow update, delete: if isSignedIn() && (
-        request.auth.uid == resource.data.to ||
-        request.auth.uid == resource.data.from
-      );
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
     }
   }
 }

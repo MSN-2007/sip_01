@@ -169,6 +169,14 @@ export async function getPendingRequests(userId) {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
+export function subscribeToPendingRequests(userId, callback) {
+  const q = query(collection(db, 'connections'), where('to', '==', userId), where('status', '==', 'pending'));
+  return onSnapshot(q, (snapshot) => {
+    const reqs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    callback(reqs);
+  });
+}
+
 // --- Seeding Data (Temporary Admin tool) ---
 import { mockProjects, mockCommunities, mockUsers } from '../data/mockData';
 

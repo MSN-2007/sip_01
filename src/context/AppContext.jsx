@@ -37,7 +37,8 @@ export function AppProvider({ children }) {
               tagline: 'AcaDify Builder',
               joinedCommunities: [],
               likedProjects: [],
-              following: []
+              following: [],
+              passwordLastChanged: new Date().toISOString()
             };
             setUser(newUser);
             // Optionally, we could create the user doc here
@@ -216,11 +217,33 @@ export function AppProvider({ children }) {
     console.log("Logged in as Demo User.");
   };
 
+  const updateUser = async (updateData) => {
+    if (!user) return;
+    
+    // Update local state
+    const updatedUser = { ...user, ...updateData };
+    setUser(updatedUser);
+    
+    // Update users list if it exists locally
+    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, ...updateData } : u));
+    
+    // Persist to database if not in demo mode
+    if (user.id !== 'u1') {
+      try {
+        await updateDoc(doc(db, 'users', user.id), updateData);
+      } catch (e) {
+        console.error("Failed to persist user update", e);
+        throw e;
+      }
+    }
+    return true;
+  };
+
   return (
     <AppContext.Provider value={{
       user, authLoading, projects, communities, users,
       following, joinedCommunities, likedProjects, notifications,
-      theme, toggleFollow, toggleJoinCommunity, toggleLike, addProject, deleteProject, updateProject: updateProjectContext, addCommunity, loginAsDemo, markAllNotificationsRead, toggleTheme
+      theme, toggleFollow, toggleJoinCommunity, toggleLike, addProject, deleteProject, updateProject: updateProjectContext, addCommunity, loginAsDemo, markAllNotificationsRead, toggleTheme, updateUser
     }}>
       {children}
     </AppContext.Provider>

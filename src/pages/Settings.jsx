@@ -15,26 +15,42 @@ import {
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { seedDatabase } from '../services/db';
+import { auth } from '../config/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import './Settings.css';
 
 export default function Settings() {
-  const { theme, toggleTheme, user, authLoading } = useApp();
+  const { theme, toggleTheme, user, authLoading, updateUser } = useApp();
   const [activeTab, setActiveTab] = useState('profile');
   const [saveStatus, setSaveStatus] = useState(null);
   const [isSeeding, setIsSeeding] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Profile Form State
+  const [profileForm, setProfileForm] = useState({
+    name: user?.name || '',
+    tagline: user?.tagline || '',
+    bio: user?.bio || ''
+  });
 
   const showToast = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    if (!user) return;
     setSaveStatus('saving');
-    setTimeout(() => {
+    try {
+      await updateUser(profileForm);
       setSaveStatus('saved');
+      showToast("Profile settings saved!");
       setTimeout(() => setSaveStatus(null), 3000);
-    }, 800);
+    } catch (e) {
+      console.error(e);
+      setSaveStatus(null);
+      showToast("Save failed: " + e.message);
+    }
   };
 
   const handleSeed = async () => {
@@ -48,12 +64,33 @@ export default function Settings() {
     setIsSeeding(false);
   };
 
-  const handlePasswordUpdate = () => {
-    showToast("Password reset email sent to " + user.email);
+  const handlePasswordUpdate = async () => {
+    if (!user?.email) return;
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      showToast("Password reset email sent to " + user.email);
+    } catch (e) {
+      showToast("Failed to send reset email: " + e.message);
+    }
   };
 
   const handleEnable2FA = () => {
     showToast("Two-Factor Authentication wizard started. Check your email.");
+  };
+
+  const formatTimeAgo = (dateString) => {
+    if (!dateString) return "Recently";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 30) return `${diffDays} days ago`;
+    const diffMonths = Math.floor(diffDays / 30);
+    if (diffMonths === 1) return "1 month ago";
+    return `${diffMonths} months ago`;
   };
 
   if (authLoading) {
@@ -123,12 +160,21 @@ export default function Settings() {
               <div className="settings-input-group">
                 <div className="form-group">
                   <label className="settings-label">Display Name</label>
-                  <input className="form-input" defaultValue={user.name} />
+                  <input 
+                    className="form-input" 
+                    value={profileForm.name} 
+                    onChange={e => setProfileForm(prev => ({ ...prev, name: e.target.value }))}
+                  />
                 </div>
                 <div className="form-group">
                   <label className="settings-label">Username</label>
                   <div style={{ position: 'relative' }}>
-                    <input className="form-input" style={{ paddingLeft: 36 }} defaultValue={user.name?.toLowerCase().replace(/\s/g, '')} />
+                    <input 
+                      className="form-input" 
+                      style={{ paddingLeft: 36 }} 
+                      value={profileForm.name?.toLowerCase().replace(/\s/g, '')} 
+                      disabled
+                    />
                     <span style={{ position: 'absolute', left: 14, top: 12, color: 'var(--text-muted)' }}>@</span>
                   </div>
                 </div>
@@ -136,12 +182,23 @@ export default function Settings() {
 
               <div className="form-group" style={{ marginBottom: 24 }}>
                 <label className="settings-label">Professional Tagline</label>
-                <input className="form-input" placeholder="e.g. IoT Architect | Fullstack Developer" defaultValue={user.tagline} />
+                <input 
+                  className="form-input" 
+                  placeholder="e.g. IoT Architect | Fullstack Developer" 
+                  value={profileForm.tagline} 
+                  onChange={e => setProfileForm(prev => ({ ...prev, tagline: e.target.value }))}
+                />
               </div>
 
               <div className="form-group">
                 <label className="settings-label">Bio</label>
-                <textarea className="form-input" rows={4} placeholder="Tell the world about your building journey..." defaultValue={user.bio} />
+                <textarea 
+                  className="form-input" 
+                  rows={4} 
+                  placeholder="Tell the world about your building journey..." 
+                  value={profileForm.bio} 
+                  onChange={e => setProfileForm(prev => ({ ...prev, bio: e.target.value }))}
+                />
               </div>
             </div>
           )}
@@ -164,7 +221,7 @@ export default function Settings() {
               <div className="settings-row">
                 <div className="settings-info">
                   <span className="settings-label">Password</span>
-                  <p className="settings-section-desc">Last changed 3 months ago</p>
+                  <p className="settings-section-desc">Last changed {formatTimeAgo(user.passwordLastChanged)}</p>
                 </div>
                 <button className="btn btn-ghost btn-sm" onClick={handlePasswordUpdate}>Update</button>
               </div>

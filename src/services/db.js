@@ -143,6 +143,12 @@ export async function getUsers() {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
+export async function updateUserProfile(userId, profileData) {
+  const docRef = doc(db, 'users', userId);
+  await updateDoc(docRef, profileData);
+  return true;
+}
+
 // --- Connections (Social Graph) ---
 export async function sendConnectionRequest(fromUserId, toUserId, additionalData = {}) {
   const connectionId = additionalData.projectId ? `${fromUserId}_${toUserId}_${additionalData.projectId}` : `${fromUserId}_${toUserId}`;

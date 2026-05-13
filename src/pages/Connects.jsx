@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Users, UserPlus, MessageSquare, Briefcase, Star, Search, ArrowRight, Check } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import ShareModal from '../components/ShareModal';
+import { subscribeToPendingRequests, sendConnectionRequest, acceptConnectionRequest } from '../services/db';
 import './Profile.css';
 
 // Demo-mode pending request — gives the panel life during showcase
@@ -23,11 +24,9 @@ export default function Connects() {
     if (!currentUser) return;
     let unsubscribe = () => {};
     
-    import('../services/db').then(({ subscribeToPendingRequests }) => {
-      unsubscribe = subscribeToPendingRequests(currentUser.id, (reqs) => {
-        setPendingRequests(reqs.length > 0 ? reqs : DEMO_PENDING);
-      });
-    }).catch(() => setPendingRequests(DEMO_PENDING));
+    unsubscribe = subscribeToPendingRequests(currentUser.id, (reqs) => {
+      setPendingRequests(reqs.length > 0 ? reqs : DEMO_PENDING);
+    });
     
     return () => unsubscribe();
   }, [currentUser]);
@@ -46,7 +45,6 @@ export default function Connects() {
   const handleRequest = async (id) => {
     setLoadingAction(id);
     try {
-      const { sendConnectionRequest } = await import('../services/db');
       await sendConnectionRequest(currentUser.id, id);
       setRequested(prev => [...prev, id]);
     } catch(e) {
@@ -58,7 +56,6 @@ export default function Connects() {
   const handleAccept = async (req) => {
     setLoadingAction(req.id);
     try {
-      const { acceptConnectionRequest } = await import('../services/db');
       await acceptConnectionRequest(req.id);
       setPendingRequests(prev => prev.filter(r => r.id !== req.id));
 
@@ -220,7 +217,7 @@ export default function Connects() {
                        </div>
                        <button 
                          className={`btn btn-sm ${requested.includes(u.id) ? 'btn-ghost' : 'btn-secondary'}`} 
-                         style={{ width: '100%', fontSize: '0.8rem' }}
+                         style={{ width: '100%', fontSize: '0.85rem', padding: '8px 0' }}
                          onClick={() => handleRequest(u.id)}
                          disabled={requested.includes(u.id) || loadingAction === u.id}
                        >

@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { mockUsers, mockProjects, mockCommunities } from '../data/mockData';
-import { auth } from '../config/firebase';
+import { auth, db } from '../config/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { getUserProfile, getProjects, getUsers, getCommunities } from '../services/db';
+import { setDoc, doc, updateDoc } from 'firebase/firestore';
+import { getUserProfile, getProjects, getUsers, getCommunities, updateProject, deleteProject as deleteProjectFromDb } from '../services/db';
 
 const AppContext = createContext(null);
 
@@ -41,8 +42,6 @@ export function AppProvider({ children }) {
             setUser(newUser);
             // Optionally, we could create the user doc here
             try {
-              const { setDoc, doc } = await import('firebase/firestore');
-              const { db } = await import('../config/firebase');
               await setDoc(doc(db, 'users', firebaseUser.uid), newUser, { merge: true });
             } catch (e) { console.error("Error creating user doc", e); }
           }
@@ -57,9 +56,9 @@ export function AppProvider({ children }) {
     
     return () => unsubscribe();
   }, []);
-  const [projects, setProjects] = useState(mockProjects);
-  const [communities, setCommunities] = useState(mockCommunities);
-  const [users, setUsers] = useState(mockUsers);
+  const [projects, setProjects] = useState([]);
+  const [communities, setCommunities] = useState([]);
+  const [users, setUsers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [joinedCommunities, setJoinedCommunities] = useState([]);
   const [likedProjects, setLikedProjects] = useState([]);
@@ -102,8 +101,6 @@ export function AppProvider({ children }) {
     });
     if (user && user.id !== 'u1') {
       try {
-        const { updateDoc, doc } = await import('firebase/firestore');
-        const { db } = await import('../config/firebase');
         await updateDoc(doc(db, 'users', user.id), { following: next });
       } catch (e) { console.error("Failed to update following", e); }
     }
@@ -118,8 +115,6 @@ export function AppProvider({ children }) {
     });
     if (user && user.id !== 'u1') {
       try {
-        const { updateDoc, doc } = await import('firebase/firestore');
-        const { db } = await import('../config/firebase');
         await updateDoc(doc(db, 'users', user.id), { joinedCommunities: next });
       } catch (e) { console.error("Failed to update joined communities", e); }
     }
@@ -146,15 +141,13 @@ export function AppProvider({ children }) {
   };
 
   const updateProjectContext = async (projectId, updateData) => {
-    const { updateProject } = await import('../services/db');
     await updateProject(projectId, updateData);
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updateData } : p));
   };
 
   const deleteProject = async (projectId) => {
     // 1. Remove from database (Importing service)
-    const { deleteProject: deleteFromDb } = await import('../services/db');
-    await deleteFromDb(projectId);
+    await deleteProjectFromDb(projectId);
     
     // 2. Update local state
     setProjects(prev => prev.filter(p => p.id !== projectId));
@@ -168,8 +161,6 @@ export function AppProvider({ children }) {
   const addCommunity = async (community) => {
     // Write to Firestore first
     try {
-      const { setDoc, doc, updateDoc } = await import('firebase/firestore');
-      const { db } = await import('../config/firebase');
       await setDoc(doc(db, 'communities', community.id), community);
       
       // Update local state

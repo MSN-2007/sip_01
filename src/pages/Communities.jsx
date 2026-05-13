@@ -9,9 +9,11 @@ import {
   ShieldCheck, 
   Compass, 
   TrendingUp, 
-  Lock 
+  Lock,
+  Share2
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import ShareModal from '../components/ShareModal';
 import './Communities.css';
 
 const CATEGORIES = ['All', 'Agriculture', 'Hardware', 'AI/ML', 'Healthcare', 'Education', 'Software', 'Social Impact'];
@@ -22,6 +24,8 @@ export default function Communities() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [selectedCommunity, setSelectedCommunity] = useState(null);
 
   const handleCreateCommunityClick = () => {
     if (!user) {
@@ -57,8 +61,8 @@ export default function Communities() {
         <h1 className="communities-title-new">Communities</h1>
         <p className="communities-subtitle-new">Scale your impact. Join domain-specific builder groups.</p>
         
-        <div style={{ marginTop: 32, display: 'flex', flexWrap: 'wrap', gap: 16 }}>
-           <div className="search-container-new" style={{ maxWidth: 600, flex: 1 }}>
+        <div className="communities-action-row">
+           <div className="search-container-new" style={{ maxWidth: 600, flex: 1, width: '100%' }}>
               <Search className="search-icon-new" size={20} />
               <input 
                 className="search-input-new" 
@@ -68,8 +72,7 @@ export default function Communities() {
               />
            </div>
            <button 
-             className="btn btn-primary" 
-             style={{ padding: '0 24px' }}
+             className="btn btn-primary btn-create-community" 
              onClick={handleCreateCommunityClick}
            >
              Create Community
@@ -96,9 +99,20 @@ export default function Communities() {
            <div className="section-header-row">
               <h2 className="section-title-new"><ShieldCheck size={20} style={{ color: 'var(--accent-primary)' }} /> Your Communities</h2>
            </div>
-           <div className="community-grid-new">
-              {joined.map(c => <CommunityCard key={c.id} community={c} joined={true} onToggle={() => toggleJoinCommunity(c.id)} />)}
-           </div>
+            <div className="community-grid-new">
+               {joined.map(c => (
+                 <CommunityCard 
+                   key={c.id} 
+                   community={c} 
+                   joined={true} 
+                   onToggle={() => toggleJoinCommunity(c.id)} 
+                   onShare={() => {
+                     setSelectedCommunity(c);
+                     setIsShareModalOpen(true);
+                   }}
+                 />
+               ))}
+            </div>
         </section>
       )}
 
@@ -110,17 +124,37 @@ export default function Communities() {
             </h2>
             <a href="/explore" className="section-view-all">View Trends <ArrowRight size={16} /></a>
          </div>
-         <div className="community-grid-new">
-            {filtered.map(c => <CommunityCard key={c.id} community={c} joined={false} onToggle={() => toggleJoinCommunity(c.id)} />)}
-         </div>
+          <div className="community-grid-new">
+             {filtered.map(c => (
+               <CommunityCard 
+                 key={c.id} 
+                 community={c} 
+                 joined={false} 
+                 onToggle={() => toggleJoinCommunity(c.id)} 
+                 onShare={() => {
+                   setSelectedCommunity(c);
+                   setIsShareModalOpen(true);
+                 }}
+               />
+             ))}
+          </div>
       </section>
 
       <CreateCommunityModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      
+      <ShareModal 
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={selectedCommunity?.name || 'Community'}
+        url={`${window.location.origin}/community/${selectedCommunity?.id}`}
+        userName={user?.name}
+        userTagline={selectedCommunity ? `is inviting you to join the "${selectedCommunity.name}" community on AcaDify!` : ''}
+      />
     </div>
   );
 }
 
-function CommunityCard({ community, joined, onToggle }) {
+function CommunityCard({ community, joined, onToggle, onShare }) {
   const navigate = useNavigate();
   const { user } = useApp();
   
@@ -137,6 +171,11 @@ function CommunityCard({ community, joined, onToggle }) {
       return;
     }
     onToggle();
+  };
+  
+  const handleShare = (e) => {
+    e.stopPropagation();
+    onShare();
   };
 
   return (
@@ -174,6 +213,14 @@ function CommunityCard({ community, joined, onToggle }) {
              {joined ? 'Joined ✓' : 'Join'}
            </button>
          )}
+         
+         <button 
+           className="btn btn-ghost btn-sm btn-icon" 
+           onClick={handleShare}
+           title="Share community"
+         >
+           <Share2 size={16} />
+         </button>
       </div>
     </div>
   );

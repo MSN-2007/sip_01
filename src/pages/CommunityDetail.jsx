@@ -11,10 +11,12 @@ import {
   ArrowLeft,
   Info,
   ShieldAlert,
-  ShieldCheck
+  ShieldCheck,
+  UserPlus
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { subscribeToCommunityMessages, sendCommunityMessage } from '../services/db';
+import ShareModal from '../components/ShareModal';
 import './CommunityDetail.css';
 
 export default function CommunityDetail() {
@@ -31,6 +33,7 @@ export default function CommunityDetail() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const { users } = useApp(); // To display mock members
 
   const community = communities.find(c => c.id === id);
@@ -107,6 +110,13 @@ export default function CommunityDetail() {
         <div className="sidebar-section">
            <h4 className="section-label"><Users size={14} /> MEMBERS</h4>
            <p className="section-count">{community.members.toLocaleString()} builders in this group</p>
+           <button 
+             className="btn btn-secondary btn-sm" 
+             style={{ width: '100%', marginTop: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+             onClick={() => setIsShareModalOpen(true)}
+           >
+             <UserPlus size={16} /> Invite Builders
+           </button>
         </div>
         
         <div className="community-bio-card">
@@ -238,6 +248,14 @@ export default function CommunityDetail() {
         </div>
       )}
 
+      <ShareModal 
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={community.name}
+        url={window.location.href}
+        userName={user?.name}
+        userTagline={`is inviting you to join the "${community.name}" community on AcaDify!`}
+      />
     </div>
   );
 }

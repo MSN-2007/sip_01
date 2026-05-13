@@ -13,36 +13,48 @@ service cloud.firestore {
     // Projects: Anyone can read, only owners can create/update/delete
     match /projects/{projectId} {
       allow read: if true;
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isOwner(resource.data.userId);
+      allow create: if isSignedIn() 
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.keys().hasAll(['title', 'stage']);
+      // Ensure the user doesn't change the owner ID on update
+      allow update: if isOwner(resource.data.userId) 
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId']));
+      allow delete: if isOwner(resource.data.userId);
     }
 
-    // Communities: Anyone can read, only signed in users can write
+    // Communities: Anyone can read, signed in users can create. Only admin can update.
     match /communities/{communityId} {
       allow read: if true;
-      allow create, update: if isSignedIn();
+      allow create: if isSignedIn() 
+        && request.resource.data.roles.admin == request.auth.uid;
+      allow update: if isSignedIn() 
+        && resource.data.roles.admin == request.auth.uid;
       allow delete: if false;
 
       match /messages/{messageId} {
         allow read: if true;
-        allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+        allow create: if isSignedIn() 
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.text is string;
         allow update, delete: if false;
       }
     }
 
     // Direct Messages: Only participants can read/write
     match /direct_messages/{chatId} {
-      // Check if the current user's UID is part of the chatId (which is format uid1_uid2)
-      function isParticipant(chatId) {
-        return isSignedIn() && chatId.matches('.*' + request.auth.uid + '.*');
+      // Split the chatId "uid1_uid2" and check if current user is one of them
+      function isChatParticipant(chatId) {
+        return isSignedIn() && (request.auth.uid in chatId.split('_'));
       }
       
-      allow read, update, create: if isParticipant(chatId);
+      allow read, update, create: if isChatParticipant(chatId);
       allow delete: if false;
 
       match /messages/{messageId} {
-        allow read: if isParticipant(chatId);
-        allow create: if isParticipant(chatId) && request.resource.data.from == request.auth.uid;
+        allow read: if isChatParticipant(chatId);
+        allow create: if isChatParticipant(chatId) 
+          && request.resource.data.from == request.auth.uid
+          && request.resource.data.text is string;
         allow update, delete: if false;
       }
     }
@@ -50,13 +62,22 @@ service cloud.firestore {
     // Users: Profiles are public, but only owners can edit
     match /users/{userId} {
       allow read: if true;
-      allow write: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) 
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['id']));
+      allow delete: if false;
     }
 
-    // Connections: Relaxed for debugging
+    // Connections: Sender creates, recipient or sender updates/deletes
     match /connections/{connectionId} {
       allow read: if true;
-      allow create, update, delete: if isSignedIn();
+      allow create: if isSignedIn() 
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to != request.auth.uid;
+      allow update: if isSignedIn() 
+        && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
+      allow delete: if isSignedIn() 
+        && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
     }
   }
 }

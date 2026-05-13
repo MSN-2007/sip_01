@@ -61,9 +61,9 @@ export default function ShareModal({ isOpen, onClose, title, url, userName, user
   };
 
   /* ── Share text ── */
-  const shareText = userName
-    ? `Check out ${userName}'s AI-generated project portfolio on AcaDify! ${userTagline ? `"${userTagline}"` : ''} ${url}`
-    : `${title} ${url}`;
+  const shareText = userTagline 
+    ? `${userName || ''} ${userTagline} ${url}`
+    : `${title || 'Check this out!'} ${url}`;
 
   /* ── Platform links ── */
   const platforms = [
@@ -119,8 +119,8 @@ export default function ShareModal({ isOpen, onClose, title, url, userName, user
           <div className="share-header-left">
             <div className="icon-badge"><Share2 size={18} /></div>
             <div>
-              <h3 className="share-title">Share Profile</h3>
-              {userName && <p className="share-subtitle">{userName}</p>}
+              <h3 className="share-title">{title || 'Share'}</h3>
+              {userName && !userTagline && <p className="share-subtitle">{userName}</p>}
             </div>
           </div>
           <button className="btn-icon" onClick={onClose} aria-label="Close"><X size={20} /></button>

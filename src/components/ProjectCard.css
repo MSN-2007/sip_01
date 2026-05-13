@@ -181,3 +181,16 @@
   font-weight: 600;
   color: var(--text-muted);
 }
+
+@media (max-width: 480px) {
+  .pc2-header {
+    padding: 16px 20px;
+    flex-wrap: wrap;
+  }
+  .pc2-footer {
+    padding: 16px 20px;
+  }
+  .pc2-actions {
+    margin-left: auto;
+  }
+}

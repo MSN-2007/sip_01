@@ -154,6 +154,7 @@
 
 .sidebar-user {
   margin-top: 24px;
+  margin-bottom: 16px;
   padding: 16px;
   background: var(--bg-elevated);
   backdrop-filter: blur(10px);

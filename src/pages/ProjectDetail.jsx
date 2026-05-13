@@ -15,6 +15,7 @@ function GithubIcon({ size = 20, className }) {
 }
 import { useApp } from '../context/AppContext';
 import { SDG_GOALS } from '../data/mockData';
+import { sendConnectionRequest } from '../services/db';
 import ShareModal from '../components/ShareModal';
 import './ProjectDetail.css';
 
@@ -82,7 +83,6 @@ export default function ProjectDetail() {
   const sendCollabRequest = async () => {
     setIsSubmittingCollab(true);
     try {
-      const { sendConnectionRequest } = await import('../services/db');
       await sendConnectionRequest(user.id, project.userId, {
         type: 'collab_request',
         projectId: project.id,

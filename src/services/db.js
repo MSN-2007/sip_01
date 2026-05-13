@@ -114,7 +114,7 @@ export async function sendDirectMessage(userId1, userId2, messageData) {
     // Ensure the parent document exists (sometimes needed for rules/indexing)
     await setDoc(doc(db, 'direct_messages', chatId), {
       lastActivity: new Date().toISOString(),
-      participants: [userId1, userId2]
+      participants: [userId1, userId2].sort()
     }, { merge: true });
 
     const docRef = await addDoc(collection(db, 'direct_messages', chatId, 'messages'), {
@@ -164,16 +164,17 @@ export async function acceptConnectionRequest(connectionId) {
 }
 
 export async function getPendingRequests(userId) {
-  const q = query(collection(db, 'connections'), where('to', '==', userId), where('status', '==', 'pending'));
+  const q = query(collection(db, 'connections'), where('to', '==', userId));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return docs.filter(doc => doc.status === 'pending');
 }
 
 export function subscribeToPendingRequests(userId, callback) {
-  const q = query(collection(db, 'connections'), where('to', '==', userId), where('status', '==', 'pending'));
+  const q = query(collection(db, 'connections'), where('to', '==', userId));
   return onSnapshot(q, (snapshot) => {
     const reqs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    callback(reqs);
+    callback(reqs.filter(r => r.status === 'pending'));
   });
 }
 

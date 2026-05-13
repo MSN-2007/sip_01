@@ -9,9 +9,12 @@ import {
   Plus, 
   ChevronRight,
   Clock,
-  Layers
+  Layers,
+  Camera
 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { getUserProfile } from '../services/db';
+import { mockUsers } from '../data/mockData';
 
 import ActivityHeatmap from '../components/ActivityHeatmap';
 import './Profile.css';
@@ -40,20 +43,17 @@ export default function Profile() {
         return;
       }
       try {
-        const { getUserProfile } = await import('../services/db');
         const doc = await getUserProfile(id);
         if (doc) {
           setProfileUser(doc);
         } else {
           // Firestore returned nothing — fall back to mock data for demo
-          const { mockUsers } = await import('../data/mockData');
           const mockUser = mockUsers.find(u => u.id === id);
           setProfileUser(mockUser || null);
         }
       } catch (err) {
         console.error("Failed to load profile", err);
         // Even on error, try mock data so the demo still works
-        const { mockUsers } = await import('../data/mockData');
         const mockUser = mockUsers.find(u => u.id === id);
         setProfileUser(mockUser || null);
       } finally {
